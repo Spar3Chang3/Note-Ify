@@ -25,6 +25,7 @@ import {
   DequeueTranscription,
   SetTranscriptionWorking,
   CleanTranscription,
+  EstimateTokens,
   ExtractUserId,
   Red,
   Yellow,
@@ -88,7 +89,6 @@ function createVoiceListeningStream(receiver, userId, onComplete) {
     },
   });
   const decoder = new prism.opus.Decoder({
-    frameSize: 960, // all this is standard discord stuff
     channels: 2,
     rate: 48000,
   });
@@ -126,6 +126,9 @@ function createVoiceListeningStream(receiver, userId, onComplete) {
 
   const errorHandler = (err, source) => {
     console.error(`Error in "${source}" for [${userId}]:`, err);
+    if (activeVoiceStreams.has(userId)) {
+      activeVoiceStreams.delete(userId);
+    }
     opusStream.destroy();
   };
 
@@ -224,7 +227,7 @@ client.on("messageCreate", async (message) => {
           const member = await message.guild.members.fetch(targetId);
           if (!member) continue;
 
-          allSessionsMembers.set(sessionUserId, {
+          allSessionsMembers.set(targetId, {
             nickname: member.displayName,
             sessionId: sessionGmId,
           });
@@ -236,6 +239,9 @@ client.on("messageCreate", async (message) => {
         nickname: "GM",
         sessionId: sessionGmId,
       });
+
+      console.log(message.content);
+      console.log(allSessionsMembers);
 
       const connection = joinVoiceChannel({
         channelId: voiceChannel.id,
@@ -337,6 +343,7 @@ client.on("messageCreate", async (message) => {
               role: USER,
               content: feedbackMessage.content,
             });
+            console.log(Yellow(`User asked: ${feedbackMessage.content}`));
 
             const revise = await ollama.chat({
               model: SUMMARY_MODEL,
@@ -363,7 +370,7 @@ client.on("messageCreate", async (message) => {
 
         setTimeout(
           () => {
-            for (const [userId, memberData] of members) {
+            for (const [userId, memberData] of allSessionsMembers) {
               if (memberData.sessionId === message.member.id) {
                 allSessionsMembers.delete(userId);
               }
@@ -378,7 +385,7 @@ client.on("messageCreate", async (message) => {
     case COMMAND_LIST.pause.cmd:
       const sessionToPause = currentSessions.get(message.member.id);
       if (sessionToPause) {
-        session.connection.destroy();
+        sessionToPause.connection.destroy();
 
         while (TranscriptionWorking || TranscriptionQueue.length > 0) {
           await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -390,12 +397,12 @@ client.on("messageCreate", async (message) => {
           ),
         );
 
-        const channel = client.channels.cache.get(session.channelId);
+        const channel = client.channels.cache.get(sessionToPause.channelId);
         await channel.sendTyping();
 
         const summaryRes = await ollama.chat({
           model: SUMMARY_MODEL,
-          messages: session.chatLog,
+          messages: sessionToPause.chatLog,
           stream: false,
         });
 
@@ -411,7 +418,7 @@ client.on("messageCreate", async (message) => {
           content: markdownSummary,
         });
 
-        for (const [userId, memberData] of members) {
+        for (const [userId, memberData] of allSessionsMembers) {
           if (memberData.sessionId === message.member.id) {
             allSessionsMembers.delete(userId);
           }
@@ -424,27 +431,34 @@ client.on("messageCreate", async (message) => {
       break;
     case COMMAND_LIST.unpause.cmd:
       const sessionToUnpause = currentSessions.get(message.member.id);
-      if (sessionToUnpause) {
-        for (let i = 0; i < sessionToUnpause.players; i++) {
+      const unpauseVoiceChannel = message.member?.voice?.channel;
+      if (sessionToUnpause && unpauseVoiceChannel) {
+        for (let i = 0; i < sessionToUnpause.players.length; i++) {
           const member = await message.guild.members.fetch(
             sessionToUnpause.players[i],
           );
           if (!member) continue;
 
-          allSessionsMembers.set(message.member.id, {
+          allSessionsMembers.set(member.id, {
             nickname: member.displayName,
             sessionId: message.member.id,
           });
+          if (activeVoiceStreams.has(sessionToUnpause.players[i])) {
+            activeVoiceStreams.delete(sessionToUnpause.players[i]);
+          }
         }
         allSessionsMembers.set(message.member.id, {
           nickname: "GM",
           sessionId: message.member.id,
         });
+        if (activeVoiceStreams.has(message.member.id)) {
+          activeVoiceStreams.delete(message.member.id);
+        }
 
         const newConnection = joinVoiceChannel({
-          channelId: voiceChannel.id,
-          guildId: voiceChannel.guild.id,
-          adapterCreator: voiceChannel.guild.voiceAdapterCreator,
+          channelId: unpauseVoiceChannel.id,
+          guildId: unpauseVoiceChannel.guild.id,
+          adapterCreator: unpauseVoiceChannel.guild.voiceAdapterCreator,
           selfDeaf: false,
           selfMute: true,
         });
@@ -452,7 +466,7 @@ client.on("messageCreate", async (message) => {
         newConnection.on(VoiceConnectionStatus.Ready, () => {
           console.log(
             Green(
-              `Voice connected for channel [${voiceChannel.id}], starting receiver.`,
+              `Voice connected for channel [${unpauseVoiceChannel.id}], starting receiver.`,
             ),
           );
           start = Date.now();
@@ -461,15 +475,17 @@ client.on("messageCreate", async (message) => {
 
         sessionToUnpause.connection = newConnection;
 
-        await message.reply(`Joined ${voiceChannel.name} and listening.`);
+        await message.reply(
+          `Joined ${unpauseVoiceChannel.name} and listening.`,
+        );
       } else return;
       break;
     case COMMAND_LIST.help.cmd:
       let helpMessage = "";
-      helpMessage += `\`${COMMAND_LIST.start.cmd}\`: ${COMMAND_LIST.start.desc} \n\n`;
-      helpMessage += `\`${COMMAND_LIST.stop.cmd}\`: ${COMMAND_LIST.stop.desc} \n\n`;
-      helpMessage += `\`${COMMAND_LIST.pause.cmd}\`: ${COMMAND_LIST.pause.desc} \n\n`;
-      helpMessage += `\`${COMMAND_LIST.unpause.cmd}\`: ${COMMAND_LIST.unpause.desc} \n\n`;
+      helpMessage += `\`${COMMAND_LIST.start.cmd}\`: ${COMMAND_LIST.start.desc} \n`;
+      helpMessage += `\`${COMMAND_LIST.stop.cmd}\`: ${COMMAND_LIST.stop.desc} \n`;
+      helpMessage += `\`${COMMAND_LIST.pause.cmd}\`: ${COMMAND_LIST.pause.desc} \n`;
+      helpMessage += `\`${COMMAND_LIST.unpause.cmd}\`: ${COMMAND_LIST.unpause.desc} \n`;
       helpMessage += `\`${COMMAND_LIST.help.cmd}\`: ${COMMAND_LIST.help.desc} \n`;
 
       await message.reply(helpMessage);
