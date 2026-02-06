@@ -15,7 +15,9 @@ As of right now, the bot takes streams from a discord vc, transcribes them using
 I used bun for the sake of compiling a smaller binary, but node should work for standard runs with a bit of dependency care. The following instructions should help you with setting up the repo for bun. Just don't forget your own discord bot token.
 
 `git clone https://github.com/Spar3Chang3/Note-Ify.git`
+
 `cd Note-Ify`
+
 `bun install`
 
 For running directly:
@@ -25,5 +27,7 @@ For running directly:
 For compiling:
 
 `bun build index.js --compile --outfile noteify`
+
 `chmod +x noteify`
+
 `./noteify`

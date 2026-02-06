@@ -46,7 +46,7 @@ export const SUMMARY_MODEL = "lstep/neuraldaredevil-8b-abliterated:q8_0";
  * @constant {string}
  */
 export const INITIAL_PROMPT =
-  "You are a tabletop role-playing game summarizer. Please summarize the conversation and plot between the following <player> and </player> delimiters. In your response, return a markdown formatted list of current session events, player conversations, notable/funny quotes, and role-play interactions. Your list should retell the session as though it is a story. Be direct, brief, and most of all clear in your summary.";
+  "You are a tabletop role-playing game summarizer. Please summarize the conversation and plot between the following <player> and </player> delimiters. In your response, return a markdown formatted list that tells a story/adventure of current session events, player conversations, notable/funny quotes, and role-play interactions. Your list should retell the session as though someone is sharing a fable. Be direct, brief, and most of all clear in your summary.";
 
 /**
  * The editing system prompt that defines how the ai should edit its summary.
