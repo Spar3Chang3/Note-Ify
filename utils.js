@@ -1,12 +1,19 @@
+import ollama from "ollama";
+
 /**
- * Represents a queued audio processing task containing metadata and raw audio data.
+ * Represents a single chat message in the LLM conversation.
  *
- * @typedef {Object} TranscriptionJob
- * @property {string} userId - The unique Discord user ID of the speaker.
- * @property {string} sessionId - The identifier for the target session chat log.
- * @property {number} startedAt - JavaScript Unix timestamp (milliseconds) when the audio stream started.
- * @property {number} endedAt - JavaScript Unix timestamp (milliseconds) when the audio stream ended.
- * @property {Buffer} wavBuffer - The raw audio stream data stored in a WAV buffer.
+ * @typedef {Object} ChatMessage
+ * @property {("system"|"user"|"assistant")} role - The role of the message author.
+ * @property {string} content - The message content.
+ */
+
+/**
+ * Represents a single Note Ify command definition.
+ *
+ * @typedef {Object} CommandDefinition
+ * @property {string} cmd - The command string to invoke (e.g. "!start-session").
+ * @property {string} desc - A human-readable description of what the command does.
  */
 
 /**
@@ -38,7 +45,7 @@ export const WHISPER_URL = "http://127.0.0.1:8080/inference";
  * currently using a quantized Neural Daredevil 8B model.
  * @constant {string}
  */
-export const SUMMARY_MODEL = "lstep/neuraldaredevil-8b-abliterated:q8_0";
+export const SUMMARY_MODEL = "huihui_ai/qwen3-abliterated:8b-v2";
 
 /**
  * The foundational system prompt that defines the AI's persona and constraints.
@@ -46,7 +53,7 @@ export const SUMMARY_MODEL = "lstep/neuraldaredevil-8b-abliterated:q8_0";
  * @constant {string}
  */
 export const INITIAL_PROMPT =
-  "You are a tabletop role-playing game summarizer. Please summarize the conversation and plot between the following <player> and </player> delimiters. In your response, return a markdown formatted list that tells a story/adventure of current session events, player conversations, notable/funny quotes, and role-play interactions. Your list should retell the session as though someone is sharing a fable. Be direct, brief, and most of all clear in your summary.";
+  "You are a tabletop role-playing game summarizer. Please summarize the conversation and plot between the following <player> and </player> delimiters. In your response, return a markdown formatted list that tells a story of current session events, player conversations, notable/funny quotes, and role-play interactions. Your list should retell the session as though someone is sharing a tale. Be direct and clear in your retelling.";
 
 /**
  * The editing system prompt that defines how the ai should edit its summary.
@@ -118,18 +125,6 @@ export const COMMAND_LIST = {
 };
 
 /**
- * A FIFO (First-In-First-Out) queue holding pending transcription jobs.
- * @type {Array<TranscriptionJob>}
- */
-export const TranscriptionQueue = [];
-
-/**
- * Global flag tracking if the transcription worker is currently processing a job.
- * @type {boolean}
- */
-export let TranscriptionWorking = false;
-
-/**
  * Estimates the number of tokens in a text string using the standard heuristic
  * (1 token ≈ 4 characters).
  *
@@ -176,60 +171,62 @@ export function ExtractUserId(mention) {
 }
 
 /**
- * Adds a new transcription job to the end of the processing queue.
+ * Sends a WAV audio buffer to the Whisper inference server for transcription.
+ * Returns the cleaned transcription text, or an empty string if an error occurs.
  *
- * @param {TranscriptionJob} job - The transcription job to queue.
- * @returns {void}
+ * @param {Buffer} buffer - The raw WAV audio buffer to transcribe.
+ * @returns {Promise<string>} A promise that resolves to the cleaned transcription text.
  */
-export async function EnqueueTranscription(job) {
-  TranscriptionQueue.push(job);
-}
+export async function TranscribeWavBuffer(buffer) {
+  const audioBlob = new Blob([buffer], {
+    type: "audio/wav",
+  });
 
-/**
- * Removes the next transcription job from the front of the queue and processes it.
- * This function handles the "working" lock state and recursively processes the queue
- * until it is empty.
- *
- * @param {function(TranscriptionJob): Promise<void>} callback - Async function to execute with the dequeued job.
- * @returns {Promise<void>}
- */
-export async function DequeueTranscription(callback) {
-  // 1. Check if we are already busy
-  if (TranscriptionWorking) return;
-
-  // 2. Get the job
-  const job = TranscriptionQueue.shift();
-  if (!job) return;
-
-  // 3. Lock the worker
-  TranscriptionWorking = true;
+  const formData = new FormData();
+  formData.append("file", audioBlob, "voiceStream.wav");
+  formData.append("temperature", "0.0");
+  formData.append("temperature_inc", "0.2");
+  formData.append("response_format", "json");
 
   try {
-    // 4. Wait for the actual work to finish
-    await callback(job);
-  } catch (error) {
-    console.error("Error processing transcription job:", error);
-  } finally {
-    // 5. Always release the lock, even if the callback failed
-    TranscriptionWorking = false;
+    const res = await fetch(WHISPER_URL, {
+      method: "POST",
+      body: formData,
+    });
 
-    // 6. Check if there are more jobs and keep going
-    if (TranscriptionQueue.length > 0) {
-      // call recursively to process the next item
-      DequeueTranscription(callback);
+    if (!res.ok) {
+      const json = await res.json();
+      const errorText = json.error;
+      throw new Error(
+        Red(`Whisper failed with code ${res.status}: ${errorText}`),
+      );
     }
+
+    const result = await res.json();
+    return CleanTranscription(result.text);
+  } catch (err) {
+    console.error(
+      Red(`Error connecting to whisper server or replying on discord: ${err}`),
+    );
+    return "";
   }
 }
 
 /**
- * Updates the global state indicating whether the transcription worker is busy.
- * Used to lock the worker so it doesn't pull multiple jobs simultaneously.
+ * Calls the configured summarization model with the given chat log
+ * and returns the model's response content.
  *
- * @param {boolean} isWorking - The new state (true = busy, false = idle).
- * @returns {void}
+ * @param {ChatMessage[]} chatLog - The conversation history to send to the model.
+ * @returns {Promise<string>} The assistant's reply content from the summarization model.
  */
-export function SetTranscriptionWorking(isWorking) {
-  TranscriptionWorking = isWorking;
+export async function PromptModel(chatLog) {
+  const res = await ollama.chat({
+    model: SUMMARY_MODEL,
+    messages: chatLog,
+    stream: false,
+  });
+
+  return res.message.content;
 }
 
 /**
@@ -288,4 +285,37 @@ export function Yellow(text) {
  */
 export function Green(text) {
   return `\x1b[32m${text}\x1b[0m`;
+}
+
+/**
+ * Takes a sessionLog and returns a neatly formatted string
+ * Meant for attaching transcripts
+ *
+ * @param {object[]} chatLog - the standard chatLog for ollama conversations
+ * @returns {string} The text neatly formatted and readable
+ */
+export function BuildTranscript(chatLog) {
+  const lines = [];
+
+  for (let i = 0; i < chatLog.length; i++) {
+    if (chatLog[i].role == USER) {
+      lines.push(chatLog[i].content);
+    }
+  }
+
+  return lines.join("\n\n");
+}
+
+/**
+ * Generates a simple ID using Math.random() and Date.now().
+ *
+ * Format: "<random>-<timestamp>"
+ * Example: "4829-1709245809123"
+ *
+ * @returns {string} A basic pseudo-unique ID string.
+ */
+function GenerateId() {
+  const random = Math.floor(Math.random() * 10_000);
+  const timestamp = Date.now();
+  return `${random}-${timestamp}`;
 }
