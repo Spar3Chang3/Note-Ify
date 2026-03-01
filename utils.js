@@ -53,7 +53,7 @@ export const SUMMARY_MODEL = "huihui_ai/qwen3-abliterated:8b-v2";
  * @constant {string}
  */
 export const INITIAL_PROMPT =
-  "You are a tabletop role-playing game summarizer. Please summarize the conversation and plot between the following <player> and </player> delimiters. In your response, return a markdown formatted list that tells a story of current session events, player conversations, notable/funny quotes, and role-play interactions. Your list should retell the session as though someone is sharing a tale. Be direct and clear in your retelling.";
+  "You are a tabletop role-playing game summarizer. Please summarize the conversation and plot between the following <player> and </player> delimiters. In your response, return a markdown formatted list that tells a story of current session events, player conversations, notable/funny quotes, and role-play interactions. Your list should retell the session as though someone is sharing a tale. Be direct, brief and clear in your retelling.";
 
 /**
  * The editing system prompt that defines how the ai should edit its summary.
@@ -69,6 +69,8 @@ export const REPLY_PROMPT =
  * @constant {number}
  */
 export const SILENCE_DURATION = 500;
+
+export const CHARACTER_LIMIT = 1950;
 
 /**
  * The FFmpeg arguments for converting to 16khz mono WAV
@@ -227,6 +229,45 @@ export async function PromptModel(chatLog) {
   });
 
   return res.message.content;
+}
+
+/**
+ * Splits a message into chunks that try to end on a newline before the limit.
+ *
+ * @param {string} messageText
+ * @returns {string[]} Array of message chunks
+ */
+export function SplitMessage(messageText) {
+  const CHARACTER_LIMIT = 1800;
+  const parts = [];
+
+  while (messageText.length > CHARACTER_LIMIT) {
+    // Look for the last newline BEFORE (or at) the limit
+    const window = messageText.slice(0, CHARACTER_LIMIT + 1);
+    let splitIndex = Math.max(
+      window.lastIndexOf("\n"),
+      window.lastIndexOf("\r"),
+    );
+
+    // If no newline found in the window, hard split at the limit
+    if (splitIndex <= 0) {
+      splitIndex = CHARACTER_LIMIT;
+    }
+
+    // Take the chunk and shrink the remaining text
+    parts.push(messageText.slice(0, splitIndex).trimEnd());
+    messageText = messageText.slice(splitIndex).trimStart();
+  }
+
+  // Always return an array, even if the original was below the limit
+  if (messageText.length > 0) {
+    parts.push(messageText);
+  } else if (parts.length === 0) {
+    // Edge case: empty input string -> return [""] instead of []
+    parts.push("");
+  }
+
+  return parts;
 }
 
 /**

@@ -15,7 +15,7 @@
  * @property {string} sessionId
  *   The Discord user ID of the GM representing the session ID
  */
-import { Client, AttachmentBuilder } from "discord.js";
+import { Client, AttachmentBuilder, RPCDeviceType } from "discord.js";
 import {
   joinVoiceChannel,
   EndBehaviorType,
@@ -38,6 +38,8 @@ import {
   BuildTranscript,
   TranscribeWavBuffer,
   PromptModel,
+  CHARACTER_LIMIT,
+  SplitMessage,
 } from "./utils.js";
 
 export default class Handler {
@@ -353,8 +355,13 @@ export default class Handler {
     await channel.sendTyping();
 
     const markdownSummary = await PromptModel(this.chatLog);
+    const splitSummary = SplitMessage(markdownSummary);
+    for (let i = 0; i < splitSummary.length; i++) {
+      await channel?.send({
+        content: `${splitSummary[i]} \n\n-# (Part ${i + 1}/${splitSummary.length})`,
+      });
+    }
     const summaryMessage = await channel?.send({
-      content: markdownSummary,
       files: [transcriptAttachment],
     });
     console.log(
@@ -376,14 +383,11 @@ export default class Handler {
         Green(`Thread [${thread.name}] created. Updating assistant prompt.`),
       );
 
-      this.chatLog.push({
-        role: ASSISTANT,
-        content: markdownSummary,
-      });
-      this.chatLog.push({
-        role: SYSTEM,
-        content: REPLY_PROMPT,
-      });
+      this.chatLog = [
+        { role: SYSTEM, content: INITIAL_PROMPT },
+        { role: ASSISTANT, content: markdownSummary },
+        { role: SYSTEM, content: REPLY_PROMPT },
+      ];
 
       await thread.send(
         "You now have 30 minutes to reply and update the summary here. I will only listen to the GM, in fact I will listen to EVERYTHING the GM says, so no fluff.",
@@ -405,12 +409,16 @@ export default class Handler {
         console.log(Yellow(`User asked: ${feedbackMessage.content}`));
 
         const reviseMessage = await PromptModel(this.chatLog);
+        const splitRevise = SplitMessage(reviseMessage);
+        for (let i = 0; i < splitRevise.length; i++) {
+          await thread.send(
+            `${splitRevise[i]} \n\n-# (Part ${i + 1}/${splitRevise.length})`,
+          );
+        }
         this.chatLog.push({
           role: ASSISTANT,
           content: reviseMessage,
         });
-
-        await thread.send(reviseMessage);
       });
 
       collector.on("end", () => {

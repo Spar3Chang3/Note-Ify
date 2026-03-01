@@ -47,6 +47,7 @@ client.on("messageCreate", async (message) => {
         return;
       }
 
+      let reply = `Joined ${voiceChannel.name} and listening.`;
       for (let i = 0; i < args.length; i++) {
         const targetId = ExtractUserId(args[i]);
         if (targetId) {
@@ -57,6 +58,12 @@ client.on("messageCreate", async (message) => {
         }
       }
       playerMap.set(sessionGmId, "GM");
+
+      if (args.length === 0) {
+        reply =
+          "# YOU ARE ALL ALONE\n## You might want to send `!help` to see how commands work\n" +
+          reply;
+      }
 
       console.log(message.content);
       console.log(playerMap);
@@ -72,7 +79,7 @@ client.on("messageCreate", async (message) => {
 
       handler.start();
 
-      await message.reply(`Joined ${voiceChannel.name} and listening.`);
+      await message.reply(reply);
       break;
     case COMMAND_LIST.stop.cmd:
       const sessionHandler = currentSessions.get(sessionGmId);
