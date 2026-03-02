@@ -358,7 +358,7 @@ export default class Handler {
     const splitSummary = SplitMessage(markdownSummary);
     for (let i = 0; i < splitSummary.length; i++) {
       await channel?.send({
-        content: `${splitSummary[i]} \n\n-# (Part ${i + 1}/${splitSummary.length})`,
+        content: splitSummary[i],
       });
     }
     const summaryMessage = await channel?.send({
@@ -411,9 +411,7 @@ export default class Handler {
         const reviseMessage = await PromptModel(this.chatLog);
         const splitRevise = SplitMessage(reviseMessage);
         for (let i = 0; i < splitRevise.length; i++) {
-          await thread.send(
-            `${splitRevise[i]} \n\n-# (Part ${i + 1}/${splitRevise.length})`,
-          );
+          await thread.send(splitRevise[i]);
         }
         this.chatLog.push({
           role: ASSISTANT,

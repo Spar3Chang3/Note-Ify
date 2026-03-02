@@ -232,40 +232,59 @@ export async function PromptModel(chatLog) {
 }
 
 /**
- * Splits a message into chunks that try to end on a newline before the limit.
+ * Splits a message into chunks, counting \n and \r as "free" characters
+ * for the character limit check, but keeping them intact in the output.
  *
  * @param {string} messageText
- * @returns {string[]} Array of message chunks
+ * @returns {string[]}
  */
 export function SplitMessage(messageText) {
   const CHARACTER_LIMIT = 1800;
   const parts = [];
 
-  while (messageText.length > CHARACTER_LIMIT) {
-    // Look for the last newline BEFORE (or at) the limit
-    const window = messageText.slice(0, CHARACTER_LIMIT + 1);
-    let splitIndex = Math.max(
-      window.lastIndexOf("\n"),
-      window.lastIndexOf("\r"),
-    );
+  // Helper: count newline characters
+  const countNewlines = (str) => (str.match(/[\n\r]/g) || []).length;
 
-    // If no newline found in the window, hard split at the limit
-    if (splitIndex <= 0) {
-      splitIndex = CHARACTER_LIMIT;
+  while (true) {
+    const newlineCount = countNewlines(messageText);
+    const effectiveLength = messageText.length - newlineCount;
+
+    // If the visible length is within the limit, we're done
+    if (effectiveLength <= CHARACTER_LIMIT) {
+      break;
     }
 
-    // Take the chunk and shrink the remaining text
+    // We need to split: look at the window up to the visible limit
+    let visibleCount = 0;
+    let splitIndex = 0;
+
+    // Walk characters until effective count hits the limit
+    for (let i = 0; i < messageText.length; i++) {
+      const ch = messageText[i];
+      if (ch !== "\n" && ch !== "\r") {
+        visibleCount++;
+      }
+      if (visibleCount > CHARACTER_LIMIT) break;
+      splitIndex = i + 1;
+    }
+
+    // Now look for nearest *before* newline in that window
+    const window = messageText.slice(0, splitIndex);
+    const lastNL = Math.max(window.lastIndexOf("\n"), window.lastIndexOf("\r"));
+
+    if (lastNL > 0) {
+      splitIndex = lastNL + 1;
+    }
+
+    // Push chunk
     parts.push(messageText.slice(0, splitIndex).trimEnd());
+
+    // Shrink remainder
     messageText = messageText.slice(splitIndex).trimStart();
   }
 
-  // Always return an array, even if the original was below the limit
-  if (messageText.length > 0) {
-    parts.push(messageText);
-  } else if (parts.length === 0) {
-    // Edge case: empty input string -> return [""] instead of []
-    parts.push("");
-  }
+  // Always return at least one element
+  parts.push(messageText);
 
   return parts;
 }

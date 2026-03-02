@@ -60,9 +60,8 @@ client.on("messageCreate", async (message) => {
       playerMap.set(sessionGmId, "GM");
 
       if (args.length === 0) {
-        reply =
-          "# YOU ARE ALL ALONE\n## You might want to send `!help` to see how commands work\n" +
-          reply;
+        reply +=
+          "\n**You are the only person in this adventure.**\n-# If this was a mistake, consider sending `!help`.";
       }
 
       console.log(message.content);
@@ -82,6 +81,9 @@ client.on("messageCreate", async (message) => {
       await message.reply(reply);
       break;
     case COMMAND_LIST.stop.cmd:
+      await message.reply(
+        `I've left the channel and have begun summarizing. ETA is ${Math.floor(Math.random() * 10)} minutes`,
+      );
       const sessionHandler = currentSessions.get(sessionGmId);
       if (sessionHandler) {
         await sessionHandler.stop();
