@@ -105,24 +105,25 @@ export const MAX_TOKEN_LIMIT = 40000;
  */
 export const COMMAND_LIST = {
   start: {
-    cmd: "!start-session",
-    desc: "Will tell me to join the current vc you're in and begin recording listed participants. Can be used by typing `!start-session @player @player @player...`. You should use me ONLY if you are the GM.",
+    cmd: "start",
+    optFlag: "--allow-trolls",
+    desc: "Will tell me to join the current vc you're in and begin recording listed participants. Can be used by typing `@bot start @player @player @player...`. You should use me ONLY if you are the GM, BUT you may also say `--allow-trolls` and I will let other people control the bot. Please still only start as GM, as to not confuse the summary model.",
   },
   stop: {
-    cmd: "!stop-session",
-    desc: "Will tell me to leave the current vc and begin summarizing. Can be used by typing `!stop-session` and I will ONLY listen to whoever used `!start-session`.",
+    cmd: "stop",
+    desc: "Will tell me to leave the current vc and begin summarizing. Can be used by typing `@bot stop` and I will ONLY listen to whoever used `@bot start`, unless `--allow-trolls` was sent.",
   },
   pause: {
-    cmd: "!pause-session",
-    desc: "Will tell me to stay in the current vc, but stop recording and summarize the current game state. Can be used by typing `!pause-session`. This is helpful for taking breaks or resetting my token context. Again, I will ONLY listen to whoever used `!start-session`.",
+    cmd: "pause",
+    desc: "Will tell me to stay in the current vc, but stop recording and summarize the current game state. Can be used by typing `@bot pause`. This is helpful for taking breaks or resetting my token context. Again, I will ONLY listen to whoever used `@bot start`, unless `--allow-trolls` was sent.",
   },
   unpause: {
-    cmd: "!unpause-session",
-    desc: "Will tell me to start recording the previously listed participants. Can be used by typing `!unpause-session`. Again, I will ONLY listen to whoever used `!start-session`.",
+    cmd: "unpause",
+    desc: "Will tell me to start recording the previously listed participants. Can be used by typing `@bot unpause`. Again, I will ONLY listen to whoever used `@bot start`, unless `--allow-trolls` was sent.",
   },
   help: {
-    cmd: "!help",
-    desc: "Literally this message. Can be used by typing `!help`.",
+    cmd: "help",
+    desc: "Literally this message. Can be used by typing `@bot help`.",
   },
 };
 

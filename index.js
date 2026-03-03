@@ -23,18 +23,16 @@ const currentSessions = new Map();
 client.on("messageCreate", async (message) => {
   if (message.author.bot) return;
 
-  let command = "";
-  let args = [];
-  const sessionGmId = message.member.id;
+  const mentioned = client.mentions.has(client.user);
+
+  if (!mentioned) return;
+
+  const sessionId = message.guild.id;
   const sessionChannelId = message.channelId;
 
-  if (message.content[0] === "!") {
-    const fullCommand = message.content.split(" ");
-
-    command = fullCommand[0];
-
-    args = fullCommand.slice(1);
-  } else return;
+  const fullCommand = message.content.trim().split(/\s+/);
+  const command = fullCommand[1]; // Account for @
+  const args = fullCommand.slice(2);
 
   switch (command) {
     case COMMAND_LIST.start.cmd:
@@ -47,8 +45,19 @@ client.on("messageCreate", async (message) => {
         return;
       }
 
+      let allowTrolls = false;
+
       let reply = `Joined ${voiceChannel.name} and listening.`;
-      for (let i = 0; i < args.length; i++) {
+
+      for (let i = 0; i < args?.length; i++) {
+        if (args[i] === COMMAND_LIST.start.optFlag) {
+          allowTrolls = true;
+          reply +=
+            "\n**You have sent `--allow-trolls`. This means anybody can control your session!**\n";
+          continue;
+        }
+        // ^^^ Known bug: you could pass "--allow-trolls" and it would always append that reply over and over. But, it's kinda funny, so, *shrugs*
+
         const targetId = ExtractUserId(args[i]);
         if (targetId) {
           const member = await message.guild.members.fetch(targetId);
@@ -57,7 +66,7 @@ client.on("messageCreate", async (message) => {
           playerMap.set(targetId, member.displayName);
         }
       }
-      playerMap.set(sessionGmId, "GM");
+      playerMap.set(message.member.id, "GM");
 
       if (args.length === 0) {
         reply +=
@@ -71,40 +80,54 @@ client.on("messageCreate", async (message) => {
         voiceChannel: voiceChannel,
         channelId: sessionChannelId,
         players: playerMap,
-        sessionId: sessionGmId,
+        sessionId: sessionId,
+        gmId: message.member.id,
+        allowTrolls: allowTrolls,
       };
       const handler = new Handler(sessionData, client);
-      currentSessions.set(sessionGmId, handler);
+      currentSessions.set(sessionId, handler);
 
       handler.start();
 
       await message.reply(reply);
       break;
     case COMMAND_LIST.stop.cmd:
-      await message.reply(
-        `I've left the channel and have begun summarizing. ETA is ${Math.floor(Math.random() * 10)} minutes`,
-      );
-      const sessionHandler = currentSessions.get(sessionGmId);
-      if (sessionHandler) {
+      const sessionHandler = currentSessions.get(sessionId);
+      if (
+        sessionHandler &&
+        (sessionHandler.allowTrolls ||
+          message.member.id === sessionHandler.gmId)
+      ) {
+        await message.reply(
+          `I've left the channel and have begun summarizing. ETA is ${Math.floor(Math.random() * 10)} minutes`,
+        );
         await sessionHandler.stop();
 
         setTimeout(
           () => {
-            currentSessions.delete(sessionGmId);
+            currentSessions.delete(sessionId);
           },
           30 * 60 * 1000,
         );
       }
       break;
     case COMMAND_LIST.pause.cmd:
-      const pauseSessionHandler = currentSessions.get(sessionGmId);
-      if (pauseSessionHandler) {
+      const pauseSessionHandler = currentSessions.get(sessionId);
+      if (
+        pauseSessionHandler &&
+        (pauseSessionHandler.allowTrolls ||
+          message.member.id === pauseSessionHandler.gmId)
+      ) {
         await pauseSessionHandler.pause();
       }
       break;
     case COMMAND_LIST.unpause.cmd:
-      const sessionToUnpause = currentSessions.get(sessionGmId);
-      if (sessionToUnpause) {
+      const sessionToUnpause = currentSessions.get(sessionId);
+      if (
+        sessionToUnpause &&
+        (sessionToUnpause.allowTrolls ||
+          message.member.id === sessionToUnpause.gmId)
+      ) {
         sessionToUnpause.unpause();
         await message.reply(
           `Joined ${message.member.voice.channel} and listening.`,

@@ -13,7 +13,13 @@
  *   Map of Discord user IDs representing the participating players and nicknames.
  *
  * @property {string} sessionId
- *   The Discord user ID of the GM representing the session ID
+ *   A random Date-Random property representing the session ID
+ *
+ * @property {string} gmId
+ *   The discord user ID of the Game Master
+ *
+ * @property {string} allowTrolls
+ *   The start flag passed to allow external control
  */
 import { Client, AttachmentBuilder, RPCDeviceType } from "discord.js";
 import {
@@ -70,6 +76,12 @@ export default class Handler {
   /** @type {string | null} */
   sessionId = null;
 
+  /** @type {string | null} */
+  gmId = null;
+
+  /** type {boolean} */
+  allowTrolls = false;
+
   /** @type {{ role: string, content: string }[]} */
   chatLog = [];
 
@@ -97,6 +109,8 @@ export default class Handler {
   constructor(sessionData, client) {
     this.client = client;
     this.sessionId = sessionData.sessionId;
+    this.gmId = sessionData.gmId;
+    this.allowTrolls = sessionData.allowTrolls;
     this.connection = joinVoiceChannel({
       channelId: sessionData.voiceChannel.id,
       guildId: sessionData.voiceChannel.guild.id,
@@ -282,11 +296,11 @@ export default class Handler {
     await this.finishTranscriptionQueue();
     console.log(
       Yellow(
-        `Session [${sessionId}] paused. Piping all content to summarizing LLM`,
+        `Session [${this.sessionId}] paused. Piping all content to summarizing LLM`,
       ),
     );
 
-    const transcript = BuildTranscript(chatLog);
+    const transcript = BuildTranscript(this.chatLog);
     const transcriptAttachment = new AttachmentBuilder(
       Buffer.from(transcript, "utf8"),
       { name: `TRANSCRIPT-${new Date().toLocaleDateString()}.txt` },
@@ -376,7 +390,7 @@ export default class Handler {
       const thread = await summaryMessage.startThread({
         name: `Session Summary Discussion - ${new Date().toLocaleDateString()}`,
         autoArchiveDuration: 1440,
-        reason: `Post session discussion for <@${this.sessionId}>`,
+        reason: `Post session discussion for <@${this.guildId}>`,
       });
 
       console.log(
@@ -390,11 +404,11 @@ export default class Handler {
       ];
 
       await thread.send(
-        "You now have 30 minutes to reply and update the summary here. I will only listen to the GM, in fact I will listen to EVERYTHING the GM says, so no fluff.",
+        "You now have 30 minutes to reply and update the summary here. Just tell me what you want changed and I'll get to work!",
       );
 
       const collector = thread.createMessageCollector({
-        filter: (m) => !m.author.bot && m.author.id === this.sessionId,
+        filter: (m) => !m.author.bot,
         time: 30 * 60 * 1000,
       });
 
@@ -460,5 +474,16 @@ export default class Handler {
     while (this.transcriptionWorking || this.transcriptionQueue.length > 0) {
       await new Promise((resolve) => setTimeout(resolve, 1000));
     }
+  }
+
+  /**
+   * Checks if the current player map contains a certain player id
+   *
+   * @param {string} playerId
+   *
+   * @returns {boolean}
+   */
+  hasPlayer(playerId) {
+    return this.activePlayers.has(playerId);
   }
 }
