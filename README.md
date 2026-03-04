@@ -15,7 +15,7 @@ As of right now, the bot takes streams from a discord vc, transcribes them using
 I used bun for the sake of compiling a smaller binary. Using Node is possible, but you will need other package dependencies and imports within `index.js`. I do not plan to give node setup instructions, so I highly recommend just sticking with bun. The following instructions should help you with setting up the repo, just don't forget your discord token. It can either be added with:
 
 * A `.env` file placed next to `index.js` with the key `DISCORD_TOKEN=your-token-here`
-* In the `conf.toml` file, where you should already see `discord_token=""` <-- just put the token in the quotes
+* In the `conf/conf.toml` file, where you should already see `discord_token=""` <-- just put the token in the quotes
 
 `git clone https://github.com/Spar3Chang3/Note-Ify.git`
 
