@@ -1,0 +1,20 @@
+[apis]
+# The url to fetch from your whisper.cpp server - change if you're not hosting on the same machine as your bot
+whisper_url = "http://127.0.0.1:8080/inference"
+
+[models]
+# The ollama model that your summaries are piped into - change to match a model of your choosing
+summary_model = "huihui_ai/qwen3-abliterated:8b-v2" # abliterated because I don't know how unhinged your DND gets
+
+# The token limit before your bot disconnects to clear its buffer - change based on your model spec if you like
+token_limit = 40000
+
+[prompts]
+# The prompts for both summarizing and replying to user feedback - I would not recommend changing unless you know what you're doing
+initial_prompt = "You are a tabletop role-playing game summarizer. Please summarize the conversation and plot between the following <player> and </player> delimiters. In your response, return a markdown formatted list that tells a story of current session events, player conversations, notable/funny quotes, and role-play interactions. Your list should retell the session as though someone is sharing a tale. Be direct, brief and clear in your retelling."
+reply_prompt = "You will now take feedback on your markdown summary and apply based on user's preference."
+
+[tokens]
+# This is where you discord token CAN be - I do NOT recommend it, but this makes things easier than creating a .env file
+# If you're looking to follow best practice, create a file named ".env" in the parent directory and set DISCORD_TOKEN=your_token_here
+discord_token = ""

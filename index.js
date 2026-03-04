@@ -2,12 +2,11 @@ import { Client, GatewayIntentBits } from "discord.js";
 import {
   COMMAND_LIST,
   ExtractUserId,
-  Red,
-  Yellow,
+  ParseCommands,
   Green,
-  BuildTranscript,
-} from "./utils.js";
-import Handler from "./Handler.js";
+  DISCORD_TOKEN
+} from "./lib/utils.js";
+import Handler from "./lib/Handler.js";
 
 const client = new Client({
   intents: [
@@ -23,7 +22,7 @@ const currentSessions = new Map();
 client.on("messageCreate", async (message) => {
   if (message.author.bot) return;
 
-  const mentioned = client.mentions.has(client.user);
+  const mentioned = message.mentions.has(client.user);
 
   if (!mentioned) return;
 
@@ -37,6 +36,8 @@ client.on("messageCreate", async (message) => {
   switch (command) {
     case COMMAND_LIST.start.cmd:
       const playerMap = new Map();
+      const trusteeSet = new Set();
+
       const voiceChannel = message.member?.voice?.channel;
       if (!voiceChannel) {
         await message.reply(
@@ -45,20 +46,34 @@ client.on("messageCreate", async (message) => {
         return;
       }
 
-      let allowTrolls = false;
+      // let allowTrolls = false;
 
       let reply = `Joined ${voiceChannel.name} and listening.`;
+      let gmId = message.member.id;
 
-      for (let i = 0; i < args?.length; i++) {
-        if (args[i] === COMMAND_LIST.start.optFlag) {
-          allowTrolls = true;
-          reply +=
-            "\n**You have sent `--allow-trolls`. This means anybody can control your session!**\n";
-          continue;
+      const { flagsFound, flagArgs } = ParseCommands(
+        args,
+        COMMAND_LIST.start.flags,
+      );
+
+      const targetGm = ExtractUserId(
+        (flagArgs[COMMAND_LIST.start.flags.gm] || "")[0],
+      );
+      const trusteeArgs = flagArgs[COMMAND_LIST.start.flags.trusted] || [];
+      const playerArgs = flagArgs[COMMAND_LIST.start.flags.players] || [];
+
+      for (let i = 0; i < trusteeArgs.length; i++) {
+        const targetId = ExtractUserId(trusteeArgs[i]);
+        if (targetId) {
+          const member = await message.guild.members.fetch(targetId);
+          if (!member) continue;
+
+          trusteeSet.add(targetId);
         }
-        // ^^^ Known bug: you could pass "--allow-trolls" and it would always append that reply over and over. But, it's kinda funny, so, *shrugs*
+      }
 
-        const targetId = ExtractUserId(args[i]);
+      for (let i = 0; i < playerArgs.length; i++) {
+        const targetId = ExtractUserId(playerArgs[i]);
         if (targetId) {
           const member = await message.guild.members.fetch(targetId);
           if (!member) continue;
@@ -66,23 +81,36 @@ client.on("messageCreate", async (message) => {
           playerMap.set(targetId, member.displayName);
         }
       }
-      playerMap.set(message.member.id, "GM");
 
-      if (args.length === 0) {
+      if (playerArgs.length === 0) {
         reply +=
           "\n**You are the only person in this adventure.**\n-# If this was a mistake, consider sending `!help`.";
       }
 
+      const gmMember = targetGm
+        ? await message.guild.members.fetch(targetGm).catch(() => null)
+        : null;
+      if (!gmMember) {
+        reply +=
+          "\n**The `--gm` flag was not understood or not included, so by default you have become the GM**";
+      } else {
+        gmId = gmMember.id;
+      }
+
+      playerMap.set(gmId, "GM");
+      trusteeSet.add(gmId);
+
       console.log(message.content);
-      console.log(playerMap);
+      console.log("Players:", playerMap);
+      console.log("Trustees:", trusteeSet);
 
       const sessionData = {
         voiceChannel: voiceChannel,
         channelId: sessionChannelId,
         players: playerMap,
+        trustees: trusteeSet,
         sessionId: sessionId,
-        gmId: message.member.id,
-        allowTrolls: allowTrolls,
+        gmId: gmId,
       };
       const handler = new Handler(sessionData, client);
       currentSessions.set(sessionId, handler);
@@ -93,11 +121,7 @@ client.on("messageCreate", async (message) => {
       break;
     case COMMAND_LIST.stop.cmd:
       const sessionHandler = currentSessions.get(sessionId);
-      if (
-        sessionHandler &&
-        (sessionHandler.allowTrolls ||
-          message.member.id === sessionHandler.gmId)
-      ) {
+      if (sessionHandler && sessionHandler.hasTrustee(message.member.id)) {
         await message.reply(
           `I've left the channel and have begun summarizing. ETA is ${Math.floor(Math.random() * 10)} minutes`,
         );
@@ -115,19 +139,14 @@ client.on("messageCreate", async (message) => {
       const pauseSessionHandler = currentSessions.get(sessionId);
       if (
         pauseSessionHandler &&
-        (pauseSessionHandler.allowTrolls ||
-          message.member.id === pauseSessionHandler.gmId)
+        pauseSessionHandler.hasTrustee(message.member.id)
       ) {
         await pauseSessionHandler.pause();
       }
       break;
     case COMMAND_LIST.unpause.cmd:
       const sessionToUnpause = currentSessions.get(sessionId);
-      if (
-        sessionToUnpause &&
-        (sessionToUnpause.allowTrolls ||
-          message.member.id === sessionToUnpause.gmId)
-      ) {
+      if (sessionToUnpause && sessionToUnpause.hasTrustee(message.member.id)) {
         sessionToUnpause.unpause();
         await message.reply(
           `Joined ${message.member.voice.channel} and listening.`,
@@ -151,5 +170,5 @@ client.on("messageCreate", async (message) => {
   }
 });
 
-client.login(process.env.DISCORD_TOKEN);
+client.login(process.env.DISCORD_TOKEN ?? DISCORD_TOKEN);
 console.log(Green("Logged in and awaiting vc join"));
