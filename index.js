@@ -4,7 +4,7 @@ import {
   ExtractUserId,
   ParseCommands,
   Green,
-  DISCORD_TOKEN
+  DISCORD_TOKEN,
 } from "./lib/utils.js";
 import Handler from "./lib/Handler.js";
 
@@ -165,7 +165,7 @@ client.on("messageCreate", async (message) => {
       break;
     default:
       await message.reply(
-        "I couldn't understand that. Try typing `!help` to get a list of commands.",
+        "I couldn't understand that. Try sending `@bot help` to get a list of commands.",
       );
   }
 });
