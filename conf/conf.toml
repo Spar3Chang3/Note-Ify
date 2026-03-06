@@ -7,7 +7,7 @@ whisper_url = "http://127.0.0.1:8080/inference"
 summary_model = "huihui_ai/qwen3-abliterated:8b-v2" # abliterated because I don't know how unhinged your DND gets
 
 # The token limit before your bot disconnects to clear its buffer - change based on your model spec if you like
-token_limit = 40000
+token_limit = 30000
 
 [prompts]
 # The prompts for both summarizing and replying to user feedback - I would not recommend changing unless you know what you're doing
