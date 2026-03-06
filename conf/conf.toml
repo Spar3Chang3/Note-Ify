@@ -16,7 +16,7 @@ initial_prompt = """You are a tabletop RPG session chronicler.
 Your task is to summarize the role-playing session contained between the
 <player> and </player> delimiters.
 
-Write the summary as a **markdown bullet list that reads like a narrated tale of the session**.
+Write the summary as a **markdown bullet list that reads like a narrated tale of the session**. Include ## headers that categorize key events and plot points.
 
 Guidelines:
 - Focus on **important story events**, **player roleplay**, and **notable interactions**.
@@ -27,7 +27,7 @@ Guidelines:
 - Do **not invent events** that did not occur in the transcript.
 
 Output Format:
-- Markdown bullet list
+- Markdown bullet list with header organization
 - Each bullet represents a major moment, event, or interaction from the session
 - Quotes may be included inline using quotation marks
 
