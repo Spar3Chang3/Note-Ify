@@ -26,7 +26,7 @@ client.on("messageCreate", (message) => {
     try {
       if (message.author.bot) return;
 
-      const mentioned = message.mentions.users.first()?.id === client.user.id;
+      const mentioned = message.mentions.users.has(client.user.id);
       if (!mentioned) return;
 
       if (!message.guild) {
