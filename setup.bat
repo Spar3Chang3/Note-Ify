@@ -60,13 +60,14 @@ if %errorlevel% neq 0 (
 if defined VULKAN_SDK (
     echo Vulkan SDK detected at %VULKAN_SDK%
 ) else (
-    curl -O https://sdk.lunarg.com/sdk/download/latest/windows/vulkan_sdk.exe
-    vulkansdk-windows-X64-1.2.182.1.exe --accept-licenses --default-answer --confirm-command install
+    curl -o vulkan_sdk_latest.exe -O https://sdk.lunarg.com/sdk/download/latest/windows/vulkan_sdk.exe
+    vulkan_sdk_latest.exe --accept-licenses --default-answer --confirm-command install
     set "needsrestart=true"
 )
 
 if %needsrestart%==true (
-    start "" cmd /k "%~f0"
+    set "SCRIPT=%~f0"
+    start "" cmd /k ""%SCRIPT%" child"
     echo you're free to close this window. Install continuing in different window.
     pause
     exit /b 1
