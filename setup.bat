@@ -75,7 +75,7 @@ if defined VULKAN_SDK (
 if %needsrestart%==true (
     set 
     echo TODO: MAKE better. Does restarting this not actually count as a new terminal session?
-    start "" cmd /k "%~f0"
+    powershell -Command "Start-Process cmd -ArgumentList '/k \"%~f0\" restarted'"
     echo you're free to close this window. Install continuing in different window.
     pause
     exit /b 1
