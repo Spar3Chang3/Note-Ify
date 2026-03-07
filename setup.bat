@@ -2,15 +2,15 @@
 @echo off
 setlocal enabledelayedexpansion
 set "needsrestart=false"
-::cd /d "%~dp0" Does nothing?
 
+cd /d "%~dp0"
+
+echo TODO: preserve directory path when running as admin, check this works
+:: Check for admin
 net session >nul 2>&1
 if %errorlevel% neq 0 (
-    echo TODO: preserver directory path when running as admin
-    echo RUN AS ADMINISTRATOR
-    PAUSE
-    ::echo Elevating privileges...
-    ::powershell -Command "Start-Process '%~f0' -Verb RunAs"
+    echo Elevating privileges...
+    powershell -Command "Start-Process '%~f0' -Verb RunAs -WorkingDirectory '%CD%'"
     exit /b
 )
 
