@@ -192,7 +192,6 @@ if %errorlevel% neq 0 (
     cmake -B build -S . -DCMAKE_BUILD_TYPE=Release -DGGML_VULKAN=1
 )
 
-cmake -B build -S . -DCMAKE_BUILD_TYPE=Release -DGGML_VULKAN=1
 if %errorlevel% neq 0 (
     echo CMake generation failed.
     pause
