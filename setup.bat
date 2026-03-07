@@ -16,9 +16,9 @@ echo =====================================
 
 :: Ask for Discord Token
 echo Step 1: Enter Discord Token
-set /p DISCORD_AUTH=Enter your Discord Bot Token: 
+set /p DISCORD_AUTH=Enter your Discord Bot Token (leave blank to skip): 
 
-echo will save to .env
+echo will save to .env if changed
 
 :: Check for Git
 echo Step 2: Checking for Git
@@ -63,7 +63,6 @@ if %errorlevel% neq 0 (
 ) else (
     echo CMake already installed.
 )
-echo TODO: The vulkan SDK is never found on reinstall. Maybe this is the wrong way to do this?
 if defined VULKAN_SDK (
     echo Vulkan SDK detected at %VULKAN_SDK%
 ) else (
@@ -183,6 +182,16 @@ if not exist "ggml-base.en.bin" (
 :: Build whisper.cpp
 echo Step 9: Building whisper.cpp
 cd whisper.cpp
+
+vulkaninfo >nul 2>nul
+
+if %errorlevel% neq 0 (
+    echo no vulkan support?
+    cmake -B build -S . -DCMAKE_BUILD_TYPE=Release
+) else (
+    cmake -B build -S . -DCMAKE_BUILD_TYPE=Release -DGGML_VULKAN=1
+)
+PAUSE
 
 cmake -B build -S . -DCMAKE_BUILD_TYPE=Release -DGGML_VULKAN=1
 if %errorlevel% neq 0 (
