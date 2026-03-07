@@ -191,7 +191,6 @@ if %errorlevel% neq 0 (
 ) else (
     cmake -B build -S . -DCMAKE_BUILD_TYPE=Release -DGGML_VULKAN=1
 )
-PAUSE
 
 cmake -B build -S . -DCMAKE_BUILD_TYPE=Release -DGGML_VULKAN=1
 if %errorlevel% neq 0 (
