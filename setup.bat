@@ -2,12 +2,15 @@
 @echo off
 setlocal enabledelayedexpansion
 set "needsrestart=false"
-cd /d "%~dp0"
+::cd /d "%~dp0" Does nothing?
 
 net session >nul 2>&1
 if %errorlevel% neq 0 (
-    echo Elevating privileges...
-    powershell -Command "Start-Process '%~f0' -Verb RunAs"
+    echo TODO: preserver directory path when running as admin
+    echo RUN AS ADMINISTRATOR
+    PAUSE
+    ::echo Elevating privileges...
+    ::powershell -Command "Start-Process '%~f0' -Verb RunAs"
     exit /b
 )
 
