@@ -123,7 +123,7 @@ if not exist "whisper.cpp\ggml-base.en.bin" (
 echo Step 9: Building whisper.cpp
 cd whisper.cpp
 
-cmake -B build -S . -DCMAKE_BUILD_TYPE=Release
+cmake -B build -S . -DCMAKE_BUILD_TYPE=Release -DGGML_VULKAN=1 -DGGML_BLAS=ON -DGGML_BLAS_VENDOR=OpenBLAS
 if %errorlevel% neq 0 (
     echo CMake generation failed.
     pause
