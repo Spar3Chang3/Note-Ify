@@ -66,7 +66,7 @@ if defined VULKAN_SDK (
 )
 
 if %needsrestart%==true (
-    start cmd /k %~nx0
+    start "" cmd /k "%~f0"
     echo you're free to close this window. Install continuing in different window.
     pause
     exit /b 1
