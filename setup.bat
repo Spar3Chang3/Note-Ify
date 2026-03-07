@@ -2,6 +2,7 @@
 @echo off
 setlocal enabledelayedexpansion
 set "needsrestart=false"
+cd /d "%~dp0"
 
 net session >nul 2>&1
 if %errorlevel% neq 0 (
