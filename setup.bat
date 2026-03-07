@@ -63,19 +63,18 @@ if %errorlevel% neq 0 (
 ) else (
     echo CMake already installed.
 )
-
+echo TODO: The vulkan SDK is never found on reinstall. Maybe this is the wrong way to do this?
 if defined VULKAN_SDK (
     echo Vulkan SDK detected at %VULKAN_SDK%
 ) else (
     curl -L -o vulkan_sdk_latest.exe https://sdk.lunarg.com/sdk/download/latest/windows/vulkan_sdk.exe
-    echo TODO: ELEVATE PERMISSIONS
     vulkan_sdk_latest.exe --accept-licenses --default-answer --confirm-command install
     set "needsrestart=true"
 )
 
 if %needsrestart%==true (
     set 
-    echo TODO: MAKE MODULAR
+    echo TODO: MAKE better. Does restarting this not actually count as a new terminal session?
     start "" cmd /k "%~f0"
     echo you're free to close this window. Install continuing in different window.
     pause
