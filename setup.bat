@@ -74,9 +74,9 @@ if defined VULKAN_SDK (
 
 if %needsrestart%==true (
     set 
-    echo TODO: MAKE better. Does restarting this not actually count as a new terminal session?
-    powershell -Command "Start-Process cmd -ArgumentList '/k \"%~f0\" restarted'"
-    echo you're free to close this window. Install continuing in different window.
+    echo TODO: MAKE better. Auto restarts, auto refreshes path.
+    ::powershell -Command "Start-Process cmd -ArgumentList '/k \"%~f0\" restarted'"
+    echo RE-RUN INSTALL .BAT PLEASE. PREREQUISITES INSTALLED.
     pause
     exit /b 1
 )
@@ -184,7 +184,7 @@ if not exist "ggml-base.en.bin" (
 echo Step 9: Building whisper.cpp
 cd whisper.cpp
 
-cmake -B build -S . -DCMAKE_BUILD_TYPE=Release -DGGML_VULKAN=1 -DGGML_BLAS=ON
+cmake -B build -S . -DCMAKE_BUILD_TYPE=Release -DGGML_VULKAN=1
 if %errorlevel% neq 0 (
     echo CMake generation failed.
     pause
