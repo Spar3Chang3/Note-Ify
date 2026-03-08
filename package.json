@@ -21,6 +21,9 @@
   "trustedDependencies": [
     "@discordjs/opus",
     "@discordjs/voice",
+    "@snazzah/davey",
+    "discord.js",
+    "ffmpeg-static",
     "prism-media"
   ]
 }
