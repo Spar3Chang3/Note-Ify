@@ -1,21 +1,33 @@
 #Requires -Version 5.1
 
+#Requires -Version 5.1
+
 # Self-elevate to Administrator if not already elevated
-$identity  = [Security.Principal.WindowsIdentity]::GetCurrent()
-$principal = New-Object Security.Principal.WindowsPrincipal($identity)
+$currentIdentity = [Security.Principal.WindowsIdentity]::GetCurrent()
+$principal = New-Object Security.Principal.WindowsPrincipal($currentIdentity)
+$isAdmin = $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 
-if (-not $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
-
+if (-not $isAdmin) {
     Write-Host "Requesting Administrator privileges..." -ForegroundColor Yellow
 
-    $scriptPath = $MyInvocation.MyCommand.Definition
+    if (-not $PSCommandPath) {
+        throw "Cannot self-elevate because PSCommandPath is empty. Save and run this as a .ps1 file."
+    }
 
-    Start-Process powershell `
-        -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$scriptPath`"" `
-        -Verb RunAs
+    Start-Process `
+        -FilePath "powershell.exe" `
+        -Verb RunAs `
+        -WorkingDirectory (Get-Location) `
+        -ArgumentList @(
+            "-NoProfile",
+            "-ExecutionPolicy", "Bypass",
+            "-File", $PSCommandPath
+        )
 
     exit
 }
+
+$ErrorActionPreference = "Stop"
 
 $ErrorActionPreference = "Stop"
 
