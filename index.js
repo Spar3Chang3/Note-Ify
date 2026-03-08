@@ -9,6 +9,7 @@ import {
   Yellow,
 } from "./lib/utils.js";
 import Handler from "./lib/Handler.js";
+import { PrintRuntimeVersions } from "./test.js";
 
 const client = new Client({
   intents: [
@@ -298,6 +299,8 @@ client.on("messageCreate", (message) => {
     }
   })();
 });
+
+PrintRuntimeVersions();
 
 client
   .login(process.env.DISCORD_TOKEN ?? DISCORD_TOKEN)
