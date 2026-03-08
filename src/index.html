@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Note-Ify Control Panel</title>
+        <link rel="stylesheet" href="./styles.css" />
+        <script type="module" src="./main.js" defer></script>
+    </head>
+    <body>
+        <main class="app">
+            <header class="topbar">
+                <div>
+                    <h1>Note-Ify Bot</h1>
+                    <p class="subtitle">Run bot.js and stream live logs</p>
+                </div>
+
+                <div class="actions">
+                    <button id="startBtn" class="btn primary">Start Bot</button>
+                    <button id="stopBtn" class="btn danger" disabled>
+                        Stop Bot
+                    </button>
+                    <span id="status" class="status stopped">Stopped</span>
+                </div>
+            </header>
+
+            <section class="panel">
+                <div class="panel-header">
+                    <h2>Console Output</h2>
+                    <button id="clearBtn" class="btn secondary">Clear</button>
+                </div>
+
+                <div id="logWrap" class="log-wrap">
+                    <code id="logOutput" class="log-output"></code>
+                </div>
+            </section>
+        </main>
+    </body>
+</html>

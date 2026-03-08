@@ -7,9 +7,9 @@ import {
   DISCORD_TOKEN,
   Red,
   Yellow,
-} from "./lib/utils.js";
-import Handler from "./lib/Handler.js";
-import { PrintRuntimeVersions, DetectPlatform } from "./lib/test.js";
+} from "./utils.js";
+import Handler from "./Handler.js";
+import { PrintRuntimeVersions, DetectPlatform } from "./test.js";
 
 const client = new Client({
   intents: [
