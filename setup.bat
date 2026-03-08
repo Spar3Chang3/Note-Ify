@@ -3,7 +3,9 @@
 setlocal enabledelayedexpansion
 set "needsrestart=false"
 
-cd /d "%~dp0"
+echo TODO dynamic location
+mkdir C:\Users\%USERNAME%\Note-ify
+cd C:\Users\%USERNAME%\Note-ify
 
 echo TODO: preserve directory path when running as admin, check this works
 :: Check for admin
