@@ -101,7 +101,7 @@ if not exist "Note-Ify" (
     git pull
 )
 
-echo DISCORD_AUTH=%DISCORD_AUTH% > .env
+echo DISCORD_TOKEN=%DISCORD_AUTH% > .env
 
 :: Check for Bun
 echo Step 4: Checking for Bun
@@ -196,7 +196,7 @@ if %errorlevel% neq 0 (
     exit /b 1
 )
 
-:: Download model
+:: Download models
 echo Step 8: Downloading ggml-base.bin
 mkdir .\build\bin\Release\models
 if not exist ".\build\bin\Release\models\ggml-base.en.bin" (
@@ -208,6 +208,7 @@ if not exist ".\build\bin\Release\models\ggml-base.en.bin" (
 ) else (
     echo Model already exists. Skipping download.
 )
+ollama pull huihui_ai/qwen3-abliterated:8b-v2
 
 cd ..
 
