@@ -8,9 +8,8 @@ import {
   Red,
   Yellow,
   COLLECTOR_DURATION,
-} from "./utils.js";
+} from "./lib/utils.js";
 import Handler from "./Handler.js";
-import { PrintRuntimeVersions, DetectPlatform } from "./test.js";
 
 const client = new Client({
   intents: [
