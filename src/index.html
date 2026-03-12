@@ -9,7 +9,7 @@
     </head>
     <body>
         <main class="app">
-            <section class="settings-modal closed" id="settingsModal">
+            <section class="modal closed" id="settingsModal">
                 <button class="icon-btn fixed" id="settingsClose">
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -27,10 +27,198 @@
                 </button>
                 <h1 class="panel">Settings</h1>
                 <div class="panel">
+                    <h2>Whisper.cpp</h2>
                     <span>Nothing to see here!</span>
                 </div>
             </section>
 
+            <section class="modal closed" id="configModal">
+                <button class="icon-btn fixed" id="configClose">
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                        class="fixed-x"
+                    >
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                        <path
+                            d="M6.707 5.293l5.293 5.292l5.293 -5.292a1 1 0 0 1 1.414 1.414l-5.292 5.293l5.292 5.293a1 1 0 0 1 -1.414 1.414l-5.293 -5.292l-5.293 5.292a1 1 0 1 1 -1.414 -1.414l5.292 -5.293l-5.292 -5.293a1 1 0 0 1 1.414 -1.414"
+                        />
+                    </svg>
+                </button>
+
+                <h1 class="panel">Config</h1>
+
+                <form class="config-form">
+                    <div class="panel config-section">
+                        <h2>APIs</h2>
+
+                        <div class="field-group">
+                            <label for="whisperUrl">Whisper URL</label>
+                            <input
+                                id="whisperUrl"
+                                name="whisper_url"
+                                type="url"
+                                class="config-input"
+                                value="http://127.0.0.1:8080/inference"
+                                placeholder="http://127.0.0.1:8080/inference"
+                            />
+                            <p class="field-help">
+                                The URL your bot uses to reach whisper.cpp.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="panel config-section">
+                        <h2>Models</h2>
+
+                        <div class="field-grid">
+                            <div class="field-group">
+                                <label for="summaryModel">Summary Model</label>
+                                <input
+                                    id="summaryModel"
+                                    name="summary_model"
+                                    type="text"
+                                    class="config-input"
+                                    value="huihui_ai/qwen3-abliterated:8b-v2"
+                                    placeholder="huihui_ai/qwen3-abliterated:8b-v2"
+                                />
+                                <p class="field-help">
+                                    The Ollama model used for summarizing
+                                    sessions.
+                                </p>
+                            </div>
+
+                            <div class="field-group">
+                                <label for="whisperModelPath"
+                                    >Whisper Model Path</label
+                                >
+                                <input
+                                    id="whisperModelPath"
+                                    name="whisper_model_path"
+                                    type="text"
+                                    class="config-input"
+                                    value="ext-bin/models/ggml-medium-q5_0.bin"
+                                    placeholder="ext-bin/models/ggml-medium-q5_0.bin"
+                                />
+                                <p class="field-help">
+                                    Path to the whisper.cpp model file.
+                                </p>
+                            </div>
+
+                            <div class="field-group">
+                                <label for="whisperServerPath"
+                                    >Whisper Server Path</label
+                                >
+                                <input
+                                    id="whisperServerPath"
+                                    name="whisper_server_path"
+                                    type="text"
+                                    class="config-input"
+                                    value=""
+                                    placeholder="/path/to/whisper-server"
+                                />
+                                <p class="field-help">
+                                    Optional Linux path to your whisper.cpp
+                                    binary.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="panel config-section">
+                        <h2>Limits</h2>
+
+                        <div class="field-grid">
+                            <div class="field-group">
+                                <label for="tokenLimit">Token Limit</label>
+                                <input
+                                    id="tokenLimit"
+                                    name="token_limit"
+                                    type="number"
+                                    class="config-input"
+                                    value="30000"
+                                    min="1"
+                                    step="1"
+                                />
+                                <p class="field-help">
+                                    Disconnect threshold used to clear the
+                                    buffer.
+                                </p>
+                            </div>
+
+                            <div class="field-group">
+                                <label for="whisperThreads"
+                                    >Whisper Threads</label
+                                >
+                                <input
+                                    id="whisperThreads"
+                                    name="whisper_threads"
+                                    type="number"
+                                    class="config-input"
+                                    value="4"
+                                    min="1"
+                                    step="1"
+                                />
+                                <p class="field-help">
+                                    Thread count for whisper.cpp.
+                                </p>
+                            </div>
+
+                            <div class="field-group">
+                                <label for="feedbackTime"
+                                    >Feedback Time (minutes)</label
+                                >
+                                <input
+                                    id="feedbackTime"
+                                    name="feedback_time"
+                                    type="number"
+                                    class="config-input"
+                                    value="30"
+                                    min="1"
+                                    step="1"
+                                />
+                                <p class="field-help">
+                                    How long the bot waits for summary feedback.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="panel config-section">
+                        <h2>Tokens</h2>
+
+                        <div class="field-group">
+                            <label for="discordToken">Discord Token</label>
+                            <input
+                                id="discordToken"
+                                name="discord_token"
+                                type="password"
+                                class="config-input"
+                                value=""
+                                placeholder="Leave empty to use .env"
+                                autocomplete="off"
+                                spellcheck="false"
+                            />
+                            <p class="field-help">
+                                Optional. Leaving this blank is safer if you use
+                                a `.env` file.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="config-actions">
+                        <button type="button" class="btn secondary">
+                            Reset
+                        </button>
+                        <button type="submit" class="btn primary">
+                            Save Config
+                        </button>
+                    </div>
+                </form>
+            </section>
             <header class="topbar">
                 <div class="quickpanel">
                     <button class="icon-btn" id="settingsBtn">
@@ -53,7 +241,7 @@
                             <path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0" />
                         </svg>
                     </button>
-                    <button class="icon-btn">
+                    <button class="icon-btn" id="configBtn">
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
                             width="24"

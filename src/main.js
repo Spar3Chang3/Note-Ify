@@ -12,9 +12,15 @@ const settingsBtn = document.getElementById("settingsBtn");
 const settingsClose = document.getElementById("settingsClose");
 const settingsModal = document.getElementById("settingsModal");
 
+const configBtn = document.getElementById("configBtn");
+const configClose = document.getElementById("configClose");
+const configModal = document.getElementById("configModal");
+
 let isRunning = false;
 let stickToBottom = true;
+
 let settingsOpen = false;
+let configOpen = false;
 
 function toggleSettings(e) {
   e.preventDefault();
@@ -27,6 +33,20 @@ function toggleSettings(e) {
     settingsModal.classList.remove("closed");
     settingsModal.classList.add("open");
     settingsOpen = true;
+  }
+}
+
+function toggleConfig(e) {
+  e.preventDefault();
+
+  if (configOpen) {
+    configModal.classList.remove("open");
+    configModal.classList.add("closed");
+    configOpen = false;
+  } else {
+    configModal.classList.remove("closed");
+    configModal.classList.add("open");
+    configOpen = true;
   }
 }
 
@@ -108,3 +128,6 @@ try {
 
 settingsBtn.addEventListener("click", toggleSettings);
 settingsClose.addEventListener("click", toggleSettings);
+
+configBtn.addEventListener("click", toggleConfig);
+configClose.addEventListener("click", toggleConfig);

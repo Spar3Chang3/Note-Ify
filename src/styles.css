@@ -42,7 +42,7 @@ body {
     gap: 20px;
 }
 
-.settings-modal {
+.modal {
     top: 0;
     left: 0;
     z-index: 10;
@@ -55,21 +55,22 @@ body {
     backdrop-filter: blur(8px);
     padding: 20px;
     transition: transform 0.3s ease;
+    overflow-y: scroll;
 }
 
-.settings-modal.closed {
+.modal.closed {
     transform: translateX(-100%);
 }
 
-.settings-modal.open {
+.modal.open {
     transform: translateX(0);
 }
 
-.settings-modal h1 {
+.modal h1 {
     text-align: center;
 }
 
-.settings-modal .icon-btn.fixed {
+.modal .icon-btn.fixed {
     position: fixed;
     top: 10px;
     right: 10px;
@@ -243,6 +244,81 @@ body {
     font-size: 0.93rem;
     line-height: 1.5;
     color: #d6deeb;
+}
+
+.config-form {
+    display: grid;
+    gap: 16px;
+    max-width: 900px;
+    width: min(100%, 900px);
+    margin: 0 auto;
+}
+
+.config-section h2 {
+    margin: 0 0 16px 0;
+    font-size: 1.05rem;
+}
+
+.field-grid {
+    display: grid;
+    gap: 16px;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+
+.field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.field-group label {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.config-input {
+    width: 100%;
+    appearance: none;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 14px;
+    font: inherit;
+    color: var(--text);
+    background: var(--panel-2);
+    outline: none;
+    transition:
+        border-color 120ms ease,
+        box-shadow 120ms ease,
+        transform 120ms ease;
+}
+
+.config-input::placeholder {
+    color: var(--muted);
+}
+
+.config-input:hover {
+    border-color: rgba(75, 141, 255, 0.45);
+}
+
+.config-input:focus {
+    border-color: var(--blue);
+    box-shadow: 0 0 0 3px rgba(75, 141, 255, 0.18);
+}
+
+.field-help {
+    margin: 0;
+    font-size: 0.88rem;
+    line-height: 1.45;
+    color: var(--muted);
+}
+
+.config-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding-bottom: 8px;
+    flex-wrap: wrap;
 }
 
 @keyframes spin {
