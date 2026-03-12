@@ -6,8 +6,8 @@ whisper_url = "http://127.0.0.1:8080/inference"
 # The ollama model that your transcribed voices are piped into - change to match a model of your choosing
 summary_model = "huihui_ai/qwen3-abliterated:8b-v2" # abliterated because I don't know how unhinged your DND gets
 
-# The token limit before your bot disconnects to clear its buffer - change based on your model spec if you like
-token_limit = 30000
+# The model to run whisper.cpp with - change if transcription feel slow to a lower model from: https://huggingface.co/ggerganov/whisper.cpp/tree/main
+whisper_model = "ggml-medium-q5_0.bin"
 
 [prompts]
 # The prompts for both summarizing and replying to user feedback - I would not recommend changing unless you know what you're doing
@@ -32,7 +32,18 @@ Output Format:
 - Quotes may be included inline using quotation marks
 
 Your goal is to produce a summary that lets someone who missed the session quickly understand what happened while still capturing the tone and humor of the players."""
+
 reply_prompt = "You will now take feedback on your markdown summary and apply based on user's preference."
+
+[limits]
+# The token limit before your bot disconnects to clear its buffer - change based on your model spec if you like
+token_limit = 30000
+
+# The number of threads whisper.cpp is allowed to use, assuming you didn't compile to vulkan - only change if you know what you're doing
+whisper_threads = 4
+
+# The amount of time (in minutes) you want your summary bot to listen to feedback on discussions - change if 30 min is not enough
+feedback_time = 30
 
 [tokens]
 # This is where you discord token CAN be - I do NOT recommend it, but this makes things easier than creating a .env file

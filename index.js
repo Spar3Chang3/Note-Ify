@@ -7,9 +7,10 @@ import {
   DISCORD_TOKEN,
   Red,
   Yellow,
-} from "./lib/utils.js";
-import Handler from "./lib/Handler.js";
-import { PrintRuntimeVersions, DetectPlatform } from "./lib/test.js";
+  COLLECTOR_DURATION,
+} from "./utils.js";
+import Handler from "./Handler.js";
+import { PrintRuntimeVersions, DetectPlatform } from "./test.js";
 
 const client = new Client({
   intents: [
@@ -52,13 +53,31 @@ client.on("messageCreate", (message) => {
 
       switch (command) {
         case COMMAND_LIST.start.cmd: {
-          if (currentSessions.has(sessionId)) {
-            await message
-              .reply(
-                "A session is already running in this server. Try sending `@bot stop` first.",
-              )
-              .catch(() => {});
-            break;
+          const session = currentSessions.get(sessionId);
+
+          if (session) {
+            const isForce = args.includes(COMMAND_LIST.start.flags.force);
+
+            if (!isForce) {
+              await message
+                .reply(
+                  "A session is already running in this server. Try sending `--force` with your `start` command. This **WILL** stop my summary collecting on the previous session.",
+                )
+                .catch(() => {});
+              break;
+            }
+
+            if (!session.hasTrustee(message.member.id)) {
+              await message
+                .reply(
+                  "A session is already running in this server. You have not been chosen as a trustee to force the bot!",
+                )
+                .catch(() => {});
+              break;
+            }
+
+            clearTimeout(session.timeout);
+            currentSessions.delete(sessionId);
           }
 
           const playerMap = new Map();
@@ -206,12 +225,9 @@ client.on("messageCreate", (message) => {
               )
               .catch(() => {});
           } finally {
-            setTimeout(
-              () => {
-                currentSessions.delete(sessionId);
-              },
-              30 * 60 * 1000,
-            );
+            h.timeout = setTimeout(() => {
+              currentSessions.delete(sessionId);
+            }, COLLECTOR_DURATION);
           }
           break;
         }
@@ -306,5 +322,3 @@ client
   .login(process.env.DISCORD_TOKEN ?? DISCORD_TOKEN)
   .then(() => console.log(Green("Logged in and awaiting vc join")))
   .catch((err) => console.error(Red("Failed to login:"), err));
-
-// TODO: implement whisper server checker/process launcher
