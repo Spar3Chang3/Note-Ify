@@ -3,13 +3,10 @@ import {
   COMMAND_LIST,
   ExtractUserId,
   ParseCommands,
-  Green,
   DISCORD_TOKEN,
-  Red,
-  Yellow,
+  COLLECTOR_DURATION,
 } from "./utils.js";
 import Handler from "./Handler.js";
-import { PrintRuntimeVersions, DetectPlatform } from "./test.js";
 
 const client = new Client({
   intents: [
@@ -35,9 +32,7 @@ client.on("messageCreate", (message) => {
           .reply("This command only works in a server.")
           .catch(() =>
             console.log(
-              Yellow(
-                "Could not reply to an invalid message, please check logs or restart",
-              ),
+              "Could not reply to an invalid message, please check logs or restart",
             ),
           );
         return;
@@ -52,13 +47,31 @@ client.on("messageCreate", (message) => {
 
       switch (command) {
         case COMMAND_LIST.start.cmd: {
-          if (currentSessions.has(sessionId)) {
-            await message
-              .reply(
-                "A session is already running in this server. Try sending `@bot stop` first.",
-              )
-              .catch(() => {});
-            break;
+          const session = currentSessions.get(sessionId);
+
+          if (session) {
+            const isForce = args.includes(COMMAND_LIST.start.flags.force);
+
+            if (!isForce) {
+              await message
+                .reply(
+                  "A session is already running in this server. Try sending `--force` with your `start` command. This **WILL** stop my summary collecting on the previous session.",
+                )
+                .catch(() => {});
+              break;
+            }
+
+            if (!session.hasTrustee(message.member.id)) {
+              await message
+                .reply(
+                  "A session is already running in this server. You have not been chosen as a trustee to force the bot!",
+                )
+                .catch(() => {});
+              break;
+            }
+
+            clearTimeout(session.timeout);
+            currentSessions.delete(sessionId);
           }
 
           const playerMap = new Map();
@@ -156,7 +169,7 @@ client.on("messageCreate", (message) => {
           try {
             handler = new Handler(sessionData, client);
           } catch (err) {
-            console.error(Red("Failed to construct Handler:"), err);
+            console.error("Failed to construct Handler:", err);
             await message
               .reply(
                 "⚠️ I couldn't start the session due to an internal error.",
@@ -169,7 +182,7 @@ client.on("messageCreate", (message) => {
           try {
             await handler.start();
           } catch (err) {
-            console.error(Red("Failed to start Handler:"), err);
+            console.error("Failed to start Handler:", err);
             currentSessions.delete(sessionId);
             await message
               .reply("⚠️ I failed to connect to voice.")
@@ -199,19 +212,16 @@ client.on("messageCreate", (message) => {
           try {
             await h.stop();
           } catch (err) {
-            console.error(Red("stop() failed:"), err);
+            console.error("stop() failed:", err);
             await message
               .reply(
                 "⚠️ Stop failed partway through. Check logs; I may have still posted partial output.",
               )
               .catch(() => {});
           } finally {
-            setTimeout(
-              () => {
-                currentSessions.delete(sessionId);
-              },
-              30 * 60 * 1000,
-            );
+            h.timeout = setTimeout(() => {
+              currentSessions.delete(sessionId);
+            }, COLLECTOR_DURATION);
           }
           break;
         }
@@ -230,7 +240,7 @@ client.on("messageCreate", (message) => {
           try {
             await h.pause();
           } catch (err) {
-            console.error(Red("pause() failed:"), err);
+            console.error("pause() failed:", err);
             await message.reply("⚠️ Pause failed.").catch(() => {});
           }
           break;
@@ -253,7 +263,7 @@ client.on("messageCreate", (message) => {
               .reply(`Joined ${message.member.voice.channel} and listening.`)
               .catch(() => {});
           } catch (err) {
-            console.error(Red(`unapuse() failed:`), err);
+            console.error("unapuse() failed:", err);
             await message.reply("⚠️ Unpause failed.").catch(() => {});
           }
           break;
@@ -268,9 +278,7 @@ client.on("messageCreate", (message) => {
 
           await message.reply(helpMessage).catch(() => {
             console.log(
-              Yellow(
-                "Could not post help when asked, please check logs or restart",
-              ),
+              "Could not post help when asked, please check logs or restart",
             );
           });
           break;
@@ -282,9 +290,7 @@ client.on("messageCreate", (message) => {
             )
             .catch(() => {
               console.log(
-                Yellow(
-                  "Could not reply to a confusing command, please check logs or restart",
-                ),
+                "Could not reply to a confusing command, please check logs or restart",
               );
             });
         }
@@ -300,9 +306,7 @@ client.on("messageCreate", (message) => {
   })();
 });
 
-console.log("Running on:", DetectPlatform());
-
 client
   .login(process.env.DISCORD_TOKEN ?? DISCORD_TOKEN)
-  .then(() => console.log(Green("Logged in and awaiting vc join")))
-  .catch((err) => console.error(Red("Failed to login:"), err));
+  .then(() => console.log("Logged in and awaiting vc join"))
+  .catch((err) => console.error("Failed to login:", err));

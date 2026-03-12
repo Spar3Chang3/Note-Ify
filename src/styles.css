@@ -42,6 +42,48 @@ body {
     gap: 20px;
 }
 
+.settings-modal {
+    top: 0;
+    left: 0;
+    z-index: 10;
+    position: fixed;
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(8px);
+    padding: 20px;
+    transition: transform 0.3s ease;
+}
+
+.settings-modal.closed {
+    transform: translateX(-100%);
+}
+
+.settings-modal.open {
+    transform: translateX(0);
+}
+
+.settings-modal h1 {
+    text-align: center;
+}
+
+.settings-modal .icon-btn.fixed {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+}
+
+.fixed-x {
+    transform: rotate(0);
+    transition: transform 0.25s linear;
+}
+
+.icon-btn.fixed:hover .fixed-x {
+    transform: rotate(180deg);
+}
+
 .topbar,
 .panel {
     background: rgba(23, 26, 33, 0.9);
@@ -68,6 +110,36 @@ body {
 .subtitle {
     margin: 0;
     color: var(--muted);
+}
+
+.quickpanel {
+    padding-right: 12px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border-right: 1px solid var(--blue);
+}
+
+.icon-btn {
+    max-height: 2rem;
+    max-width: 2rem;
+    appearance: none;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    padding: 4px;
+}
+
+.icon-btn:hover .settings {
+    animation: spin 2.5s linear infinite;
+}
+
+.icon-btn:hover .config {
+    animation: scribble 0.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    transform-origin: 20% 80%;
 }
 
 .actions {
@@ -171,4 +243,49 @@ body {
     font-size: 0.93rem;
     line-height: 1.5;
     color: #d6deeb;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes scribble {
+    0% {
+        transform: translate(0, 0) rotate(0deg) scale(1);
+    }
+    10% {
+        transform: translate(-1px, 1px) rotate(-1deg);
+    }
+    20% {
+        transform: translate(2px, -1px) rotate(1deg);
+    }
+    30% {
+        transform: translate(-2px, 0px) rotate(-1.5deg);
+    }
+    40% {
+        transform: translate(1px, 2px) rotate(1deg);
+    }
+    50% {
+        transform: translate(-1px, -2px) rotate(-1deg);
+    }
+    60% {
+        transform: translate(2px, 1px) rotate(1.5deg);
+    }
+    70% {
+        transform: translate(-2px, 1px) rotate(-0.8deg);
+    }
+    80% {
+        transform: translate(1px, -1px) rotate(1deg);
+    }
+    90% {
+        transform: translate(-1px, 1px) rotate(-1deg);
+    }
+    100% {
+        transform: translate(0, 0) rotate(0deg);
+    }
 }

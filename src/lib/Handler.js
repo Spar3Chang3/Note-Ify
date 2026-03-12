@@ -38,10 +38,8 @@ import {
   SILENCE_DURATION,
   FFMPEG_WAV_ARGS,
   MAX_TOKEN_LIMIT,
+  COLLECTOR_DURATION,
   EstimateTokens,
-  Red,
-  Yellow,
-  Green,
   BuildTranscript,
   TranscribeWavBuffer,
   PromptModel,
@@ -106,6 +104,9 @@ export default class Handler {
   /** @type {number} */
   endTime = Date.now();
 
+  /** @type {setTimeout} */
+  timeout = null;
+
   /**
    * Creates a new Hanlder instance for a single Note Ify session.
    *
@@ -133,16 +134,15 @@ export default class Handler {
       selfDeaf: false,
       selfMute: true,
     });
-
     this.connection.on("error", (err) => {
       console.error(
-        Red(`Voice connection error in session [${this.sessionId}]:'`),
+        `Voice connection error in session [${this.sessionId}]:'`,
         err,
       );
     });
 
     this.connection.on(VoiceConnectionStatus.Disconnected, async () => {
-      console.log(Yellow(`Voice disconnected for session [${this.sessionId}]`));
+      console.log(`Voice disconnected for session [${this.sessionId}]`);
 
       try {
         await Promise.race([
@@ -151,7 +151,7 @@ export default class Handler {
         ]);
       } catch {
         console.log(
-          Red(`Voice connection destroyed for session [${this.sessionId}]`),
+          `Voice connection destroyed for session [${this.sessionId}]`,
         );
         this.connection.destroy();
       }
@@ -202,7 +202,7 @@ export default class Handler {
         await this.checkTokenLimit();
       }
     } catch (err) {
-      console.error(Red(`Error processing transcription job: ${err}`));
+      console.error(`Error processing transcription job: ${err}`);
     } finally {
       this.transcriptionWorking = false;
 
@@ -224,9 +224,7 @@ export default class Handler {
 
       const member = this.activePlayers.get(userId);
       if (!member) {
-        console.log(
-          Yellow(`Ignoring speaker [${userId}] - not in activePlayers`),
-        );
+        console.log(`Ignoring speaker [${userId}] - not in activePlayers`);
         return;
       }
 
@@ -285,9 +283,9 @@ export default class Handler {
       } catch {}
 
       if (err) {
-        console.error(Red(`Stream cleanup (${reason}) for [${userId}:`), err);
+        console.error(`Stream cleanup (${reason}) for [${userId}:`, err);
       } else {
-        console.log(Yellow(`Stream cleanup (${reason}) for [${userId}]`));
+        console.log(`Stream cleanup (${reason}) for [${userId}]`);
       }
     };
 
@@ -298,9 +296,7 @@ export default class Handler {
       const buffer = Buffer.concat(wavChunks);
 
       console.log(
-        Green(
-          `Finished processing <${buffer.length}> bytes of WAV audio for user [${userId}]`,
-        ),
+        `Finished processing <${buffer.length}> bytes of WAV audio for user [${userId}]`,
       );
 
       cleanup(reason);
@@ -359,18 +355,14 @@ export default class Handler {
   async start() {
     if (!this.connection) {
       console.log(
-        Red(
-          `There was no set connection for session [${this.sessionId}], returning`,
-        ),
+        `There was no set connection for session [${this.sessionId}], returning`,
       );
       return;
     }
 
     if (this.connection.state.status === VoiceConnectionStatus.Ready) {
       console.log(
-        Green(
-          `Voice already ready for [${this.voiceChannelId}], starting receiver.`,
-        ),
+        `Voice already ready for [${this.voiceChannelId}], starting receiver.`,
       );
       this.startVoiceReceiver();
       return;
@@ -379,14 +371,12 @@ export default class Handler {
     try {
       await entersState(this.connection, VoiceConnectionStatus.Ready, 15_000);
       console.log(
-        Green(
-          `Voice connected for channel [${this.voiceChannelId}], starting receiver.`,
-        ),
+        `Voice connected for channel [${this.voiceChannelId}], starting receiver.`,
       );
       this.startVoiceReceiver();
     } catch (err) {
       console.error(
-        Red(`Voice never became ready for session [${this.sessionId}]`),
+        `Voice never became ready for session [${this.sessionId}]`,
         err,
       );
     }
@@ -407,14 +397,12 @@ export default class Handler {
       try {
         this.connection.destroy();
       } catch (err) {
-        console.error(Red("Failed to destroy voice connection:"), err);
+        console.error("Failed to destroy voice connection:", err);
       }
 
       await this.finishTranscriptionQueue();
       console.log(
-        Yellow(
-          `Session [${this.sessionId}] paused. Piping all content to summarizing LLM`,
-        ),
+        `Session [${this.sessionId}] paused. Piping all content to summarizing LLM`,
       );
 
       this.activeVoiceStreams.clear();
@@ -433,7 +421,7 @@ export default class Handler {
       try {
         ({ transcript, summary } = await this.getSummaryAndBuildTranscript());
       } catch (err) {
-        console.error(Red("Failed to build transcript/summary"), err);
+        console.error("Failed to build transcript/summary", err);
 
         transcript = null;
         summary =
@@ -454,7 +442,7 @@ export default class Handler {
         })
         .catch(() => {});
     } catch (err) {
-      console.log(Red(`**SUPER ERROR - BROKE TRY CATCH CHAIN**:`), err);
+      console.log(`**SUPER ERROR - BROKE TRY CATCH CHAIN**:`, err);
     } finally {
       this.sessionTransitioning = false;
     }
@@ -477,13 +465,13 @@ export default class Handler {
 
     this.connection.on("error", (err) => {
       console.error(
-        Red(`Voice connection error in session [${this.sessionId}]:'`),
+        `Voice connection error in session [${this.sessionId}]:'`,
         err,
       );
     });
 
     this.connection.on(VoiceConnectionStatus.Disconnected, async () => {
-      console.log(Yellow(`Voice disconnected for session [${this.sessionId}]`));
+      console.log(`Voice disconnected for session [${this.sessionId}]`);
 
       try {
         await Promise.race([
@@ -492,7 +480,7 @@ export default class Handler {
         ]);
       } catch {
         console.log(
-          Red(`Voice connection destroyed for session [${this.sessionId}]`),
+          `Voice connection destroyed for session [${this.sessionId}]`,
         );
         this.connection.destroy();
       }
@@ -514,14 +502,12 @@ export default class Handler {
       try {
         this.connection.destroy();
       } catch (err) {
-        console.error(Red("Failed to destroy voice connection:"), err);
+        console.error("Failed to destroy voice connection:", err);
       }
 
       await this.finishTranscriptionQueue();
       console.log(
-        Yellow(
-          `Session [${this.sessionId}] stopped. Piping all content to summarizing LLM`,
-        ),
+        `Session [${this.sessionId}] stopped. Piping all content to summarizing LLM`,
       );
       this.activeVoiceStreams.clear();
 
@@ -529,7 +515,7 @@ export default class Handler {
       try {
         ({ transcript, summary } = await this.getSummaryAndBuildTranscript());
       } catch (err) {
-        console.error(Red("Failed to build transcript/summary"), err);
+        console.error("Failed to build transcript/summary", err);
 
         transcript = null;
         summary =
@@ -545,7 +531,7 @@ export default class Handler {
           await channel.send({ content: chunk });
         }
       } catch (err) {
-        console.error(Red("Failed sending summary chunks"), err);
+        console.error("Failed sending summary chunks", err);
       }
 
       let summaryMessage = null;
@@ -553,12 +539,10 @@ export default class Handler {
         try {
           summaryMessage = await channel.send({ files: [transcript] });
           console.log(
-            Green(
-              `Summary finished. Sending to channel [${this.textChannelId}] and awaiting summary change prompting.`,
-            ),
+            `Summary finished. Sending to channel [${this.textChannelId}] and awaiting summary change prompting.`,
           );
         } catch (err) {
-          console.error(Red("Failed sending transcript attachment"), err);
+          console.error("Failed sending transcript attachment", err);
         }
       }
 
@@ -572,7 +556,7 @@ export default class Handler {
           reason: `Post session discussion for number [${this.guildId}]`,
         });
         console.log(
-          Green(`Thread [${thread.name}] created. Updating assistant prompt.`),
+          `Thread [${thread.name}] created. Updating assistant prompt.`,
         );
         this.chatLog = [
           { role: SYSTEM, content: INITIAL_PROMPT },
@@ -580,7 +564,7 @@ export default class Handler {
           { role: SYSTEM, content: REPLY_PROMPT },
         ];
       } catch (err) {
-        console.error(Red("Failed to start thread:"), err);
+        console.error("Failed to start thread:", err);
         await channel
           .send(
             "**I failed to start a thread for the summary, unfortunately you're on your own**",
@@ -594,13 +578,13 @@ export default class Handler {
           "You now have 30 minutes to reply and update the summary here. Just tell me what you want changed and I'll get to work!",
         );
       } catch (err) {
-        console.error(Red("Failed to send thread intro message:"), err);
+        console.error("Failed to send thread intro message:", err);
       }
 
       const collector = thread.createMessageCollector({
         filter: (m) =>
           !m.author.bot && !!m.member && this.trustees?.has(m.member.id),
-        time: 30 * 60 * 1000,
+        time: COLLECTOR_DURATION,
       });
 
       collector.on("collect", (feedbackMessage) => {
@@ -614,7 +598,7 @@ export default class Handler {
               content: feedbackMessage.content,
             });
 
-            console.log(Yellow(`User asked: ${feedbackMessage.content}`));
+            console.log(`User asked: ${feedbackMessage.content}`);
 
             const reviseMessage = await PromptModel(this.chatLog);
 
@@ -627,7 +611,7 @@ export default class Handler {
               content: reviseMessage,
             });
           } catch (err) {
-            console.error(Red("Error handling thread feedback:"), err);
+            console.error("Error handling thread feedback:", err);
             await thread
               .send("⚠️ I hit an error trying to revise that. Try again?")
               .catch(() => {});
@@ -643,7 +627,7 @@ export default class Handler {
           .catch(() => {});
       });
     } catch (err) {
-      console.log(Red("**SUPER ERROR - BROKE TRY CATCH CHAIN**:"), err);
+      console.log("**SUPER ERROR - BROKE TRY CATCH CHAIN**:", err);
     }
   }
 
@@ -667,7 +651,7 @@ export default class Handler {
         );
       } catch (err) {
         console.error(
-          Yellow(`Tried to warn token limit but could not send message:`),
+          `Tried to warn token limit but could not send message:`,
           err,
         );
       }
@@ -684,7 +668,7 @@ export default class Handler {
         await this.unpause();
       } catch (err) {
         console.error(
-          Yellow(`Tried to give disconnect reason but could not send message:`),
+          `Tried to give disconnect reason but could not send message:`,
           err,
         );
       }
@@ -716,9 +700,7 @@ export default class Handler {
    */
   async getTextChannel() {
     if (!this.client || !this.textChannelId) {
-      console.error(
-        Red(`Cannog get text channel: missing client or textChannelId`),
-      );
+      console.error(`Cannog get text channel: missing client or textChannelId`);
       return null;
     }
 
@@ -731,20 +713,20 @@ export default class Handler {
 
       if (!channel) {
         console.error(
-          Red(`Text channel [${this.textChannelId}] could not be found`),
+          `Text channel [${this.textChannelId}] could not be found`,
         );
         return null;
       }
 
       if (!channel.isTextBased()) {
-        console.error(Red(`Channel [${this.textChannelId}] is not text-based`));
+        console.error(`Channel [${this.textChannelId}] is not text-based`);
         return null;
       }
 
       return channel;
     } catch (err) {
       console.error(
-        Red(`Failed to fetch text channel [${this.textChannelId}]:`),
+        `Failed to fetch text channel [${this.textChannelId}]:`,
         err,
       );
       return null;

@@ -8,8 +8,27 @@ const statusEl = document.getElementById("status");
 const logWrap = document.getElementById("logWrap");
 const logOutput = document.getElementById("logOutput");
 
+const settingsBtn = document.getElementById("settingsBtn");
+const settingsClose = document.getElementById("settingsClose");
+const settingsModal = document.getElementById("settingsModal");
+
 let isRunning = false;
 let stickToBottom = true;
+let settingsOpen = false;
+
+function toggleSettings(e) {
+  e.preventDefault();
+
+  if (settingsOpen) {
+    settingsModal.classList.remove("open");
+    settingsModal.classList.add("closed");
+    settingsOpen = false;
+  } else {
+    settingsModal.classList.remove("closed");
+    settingsModal.classList.add("open");
+    settingsOpen = true;
+  }
+}
 
 function setStatus(running) {
   isRunning = running;
@@ -86,3 +105,6 @@ try {
 } catch {
   setStatus(false);
 }
+
+settingsBtn.addEventListener("click", toggleSettings);
+settingsClose.addEventListener("click", toggleSettings);
