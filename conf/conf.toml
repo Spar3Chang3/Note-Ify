@@ -49,6 +49,7 @@ Guidelines:
 - **Remove duplicated information** while keeping the most complete description.
 - Maintain the **tone of a narrated tale of the session**.
 - Do **not invent events** that are not present in the summaries.
+- Do **not include <summary> delimiters** in your response.
 
 Output Format:
 - Markdown bullet list with header organization
