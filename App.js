@@ -40,11 +40,8 @@ client
 
 function printValues() {
   console.log("Whisper URL:", WHISPER_URL);
-  console.log("Whisper Modell:", WHISPER_MODEL);
+  console.log("Whisper Model:", WHISPER_MODEL);
   console.log("Summary Model:", SUMMARY_MODEL);
-  console.log("Summary Prompt:", SUMMARY_PROMPT);
-  console.log("Critic Prompt:", CRITIC_PROMPT);
-  console.log("Feedback Prompt:", FEEDBACK_PROMPT);
   console.log("Collector Duration:", COLLECTOR_DURATION);
   console.log("Max Token Limit:", MAX_TOKEN_LIMIT);
 }
