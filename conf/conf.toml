@@ -11,7 +11,7 @@ whisper_model = "ggml-medium-q5_0.bin"
 
 [prompts]
 # The prompts for both summarizing and replying to user feedback - I would not recommend changing unless you know what you're doing
-initial_prompt = """You are a tabletop RPG session chronicler.
+summary_prompt = """You are a tabletop RPG session chronicler.
 
 Your task is to summarize the role-playing session contained between the
 <player> and </player> delimiters.
@@ -33,7 +33,43 @@ Output Format:
 
 Your goal is to produce a summary that lets someone who missed the session quickly understand what happened while still capturing the tone and humor of the players."""
 
-reply_prompt = "You will now take feedback on your markdown summary and apply based on user's preference."
+critic_prompt = """You are a tabletop RPG session chronicler performing a **final consolidation pass**.
+
+You will receive several summaries of a tabletop RPG session. Each summary is contained between the
+<summary> and </summary> delimiters.
+
+These summaries represent **consecutive portions of the same session** and are provided in **chronological order** from earliest to latest.
+
+Your task is to **merge them into a single coherent summary of the entire session**.
+
+Guidelines:
+- Treat each <summary> block as a **continuation of the session timeline**.
+- Preserve the **chronological order of events** based on the order the summaries appear.
+- **Combine overlapping or repeated events** when they describe the same moment.
+- **Remove duplicated information** while keeping the most complete description.
+- Maintain the **tone of a narrated tale of the session**.
+- Do **not invent events** that are not present in the summaries.
+
+Output Format:
+- Markdown bullet list with header organization
+- Each bullet represents a major moment, event, or interaction from the session
+- Quotes may be included inline using quotation marks
+
+Your goal is to produce a **clean, cohesive final summary** that reads as one continuous narrative of the session while preserving all important events, character moments, and story developments."""
+
+feedback_prompt = """You will receive feedback about a markdown summary of a tabletop RPG session.
+
+Your task is to **revise the existing summary according to the user's feedback** while preserving the original structure and information whenever possible.
+
+Guidelines:
+- Maintain the **markdown bullet list format with headers**.
+- Apply the user's requested changes such as edits, additions, removals, or stylistic adjustments.
+- Keep the **chronological order of events** unless the user specifically asks to change it.
+- Do **not invent new events** that were not already present in the summary unless the user explicitly asks for a creative addition.
+- Preserve the **tone of a narrated tale of the session** unless the user requests a different tone.
+- If feedback is ambiguous, make the **smallest reasonable change** that satisfies the request.
+
+Output the **updated full summary**, not just the changes."""
 
 [limits]
 # The token limit before your bot disconnects to clear its buffer - change based on your model spec if you like
