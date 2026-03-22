@@ -109,5 +109,5 @@ for (const chunk of modelHandler.summaryLog) {
 }
 
 console.log("Total Tokens:", totalTokens);
-console.log("=".repeat(64));
 console.log("+".repeat(64));
+console.log("=".repeat(64));
