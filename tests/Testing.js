@@ -84,30 +84,34 @@ for (const chunk of parsedTranscript) {
 
 modelHandler.sessionLog = sessionLog;
 
+let finalSummary = "";
+
 console.log("Testing ModelHandler's getCriticSummary()");
 
 const spinner = createDotSpinner("Summarizing transcript");
 
 try {
-  await modelHandler.getCriticSummary();
+  finalSummary = await modelHandler.getCriticSummary();
   spinner.stop("Summarization complete.");
 } catch (err) {
   spinner.stop("Summarization failed.");
   throw err;
 }
-
-console.log("FEEDBACK:\n", modelHandler.feedbackChat);
 console.log("=".repeat(64));
-console.log("SUMMARIES:\n", modelHandler.summaryLog);
-console.log();
 
 let totalTokens = 0;
 for (const chunk of modelHandler.summaryLog) {
   const tokens = EstimateTokens(chunk.modelContent);
+  console.log("Summary: ", chunk.modelContent);
   console.log("Summary Tokens:", tokens);
   totalTokens += tokens;
 }
 
 console.log("Total Tokens:", totalTokens);
+console.log("=".repeat(64));
+
+console.log("FINAL CRITIC:\n");
+console.log(finalSummary);
+
 console.log("+".repeat(64));
 console.log("=".repeat(64));
