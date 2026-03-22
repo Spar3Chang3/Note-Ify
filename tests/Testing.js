@@ -102,7 +102,7 @@ console.log("=".repeat(64));
 let totalTokens = 0;
 for (const chunk of modelHandler.summaryLog) {
   const tokens = EstimateTokens(chunk.modelContent);
-  console.log("Summary: ", chunk.modelContent);
+  console.log("Summary:\n", chunk.modelContent);
   console.log("Summary Tokens:", tokens);
   totalTokens += tokens;
 }
