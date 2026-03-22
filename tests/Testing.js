@@ -59,6 +59,9 @@ function createDotSpinner(label = "Summarizing transcript", intervalMs = 80) {
   };
 }
 
+console.log("=".repeat(64));
+console.log("+".repeat(64));
+
 const modelHandler = new ModelHandler(null, null);
 
 console.log("Parsing fake transcript...");
@@ -107,4 +110,4 @@ for (const chunk of modelHandler.summaryLog) {
 
 console.log("Total Tokens:", totalTokens);
 console.log("=".repeat(64));
-console.log("SESSION:\n", modelHandler.sessionLog);
+console.log("+".repeat(64));
