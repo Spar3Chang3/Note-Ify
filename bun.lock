@@ -5,13 +5,12 @@
     "": {
       "name": "note-ify",
       "dependencies": {
-        "@discordjs/opus": "^0.10.0",
+        "@discordjs/opus": "discordjs/opus",
         "@discordjs/voice": "^0.19.0",
         "@snazzah/davey": "^0.1.9",
         "discord.js": "^14.25.1",
         "ffmpeg-static": "^5.3.0",
         "ollama": "^0.6.3",
-        "opusscript": "^0.1.1",
         "prism-media": "^1.3.5",
       },
       "devDependencies": {
@@ -23,12 +22,12 @@
     },
   },
   "trustedDependencies": [
+    "prism-media",
     "@snazzah/davey",
     "ffmpeg-static",
-    "@discordjs/opus",
     "@discordjs/voice",
     "discord.js",
-    "prism-media",
+    "opusscript",
   ],
   "packages": {
     "@derhuerst/http-basic": ["@derhuerst/http-basic@8.2.4", "", { "dependencies": { "caseless": "^0.12.0", "concat-stream": "^2.0.0", "http-response-object": "^3.0.1", "parse-cache-control": "^1.0.1" } }, "sha512-F9rL9k9Xjf5blCz8HsJRO4diy111cayL2vkY2XE4r4t3n0yPXVYy3KD3nJ1qbrSn9743UWSXH4IwuCa/HWlGFw=="],
@@ -41,7 +40,7 @@
 
     "@discordjs/node-pre-gyp": ["@discordjs/node-pre-gyp@0.4.5", "", { "dependencies": { "detect-libc": "^2.0.0", "https-proxy-agent": "^5.0.0", "make-dir": "^3.1.0", "node-fetch": "^2.6.7", "nopt": "^5.0.0", "npmlog": "^5.0.1", "rimraf": "^3.0.2", "semver": "^7.3.5", "tar": "^6.1.11" }, "bin": { "node-pre-gyp": "bin/node-pre-gyp" } }, "sha512-YJOVVZ545x24mHzANfYoy0BJX5PDyeZlpiJjDkUBM/V/Ao7TFX9lcUvCN4nr0tbr5ubeaXxtEBILUrHtTphVeQ=="],
 
-    "@discordjs/opus": ["@discordjs/opus@0.10.0", "", { "dependencies": { "@discordjs/node-pre-gyp": "^0.4.5", "node-addon-api": "^8.1.0" } }, "sha512-HHEnSNrSPmFEyndRdQBJN2YE6egyXS9JUnJWyP6jficK0Y+qKMEZXyYTgmzpjrxXP1exM/hKaNP7BRBUEWkU5w=="],
+    "@discordjs/opus": ["@discordjs/opus@github:discordjs/opus#3f4a3d4", { "dependencies": { "@discordjs/node-pre-gyp": "^0.4.5", "node-addon-api": "^8.5.0" } }, "discordjs-opus-3f4a3d4", "sha512-H7iseXafB3FENkO8HMKXAyv8RB0MxxDJWwITZ18MuCl22YGGnKhjGxvoCaOjTbA2NqtOLBSRHRujj/PKTiyoRA=="],
 
     "@discordjs/rest": ["@discordjs/rest@2.6.0", "", { "dependencies": { "@discordjs/collection": "^2.1.1", "@discordjs/util": "^1.1.1", "@sapphire/async-queue": "^1.5.3", "@sapphire/snowflake": "^3.5.3", "@vladfrangu/async_event_emitter": "^2.4.6", "discord-api-types": "^0.38.16", "magic-bytes.js": "^1.10.0", "tslib": "^2.6.3", "undici": "6.21.3" } }, "sha512-RDYrhmpB7mTvmCKcpj+pc5k7POKszS4E2O9TYc+U+Y4iaCP+r910QdO43qmpOja8LRr1RJ0b3U+CqVsnPqzf4w=="],
 
