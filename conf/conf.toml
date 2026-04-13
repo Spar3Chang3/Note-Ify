@@ -82,6 +82,13 @@ whisper_threads = 4
 # The amount of time (in minutes) you want your summary bot to listen to feedback on discussions - change if 30 min is not enough
 feedback_time = 30
 
+# The parameters you want the model to run by - DO NOT CHANGE UNLESS YOU'RE FOLLOWING YOUR MODEL'S GUIDELINES
+temperature = 0.6
+
+top_k = 20
+
+top_p = 0.95
+
 [tokens]
 # This is where you discord token CAN be - I do NOT recommend it, but this makes things easier than creating a .env file
 # If you're looking to follow best practice, create a file named ".env" in the parent directory and set DISCORD_TOKEN=your_token_here
