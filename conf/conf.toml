@@ -89,6 +89,9 @@ top_k = 20
 
 top_p = 0.95
 
+# Whether you want your bot to think or not
+thinking = true
+
 [tokens]
 # This is where you discord token CAN be - I do NOT recommend it, but this makes things easier than creating a .env file
 # If you're looking to follow best practice, create a file named ".env" in the parent directory and set DISCORD_TOKEN=your_token_here
