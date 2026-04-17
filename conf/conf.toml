@@ -14,7 +14,7 @@ whisper_server_path = ""
 
 [prompts]
 # The prompts for both summarizing and replying to user feedback - I would not recommend changing unless you know what you're doing
-initial_prompt = """You are a tabletop RPG session chronicler.
+summary_prompt = """You are a tabletop RPG session chronicler.
 
 Your task is to summarize the role-playing session contained between the
 <player> and </player> delimiters.
@@ -36,17 +36,83 @@ Output Format:
 
 Your goal is to produce a summary that lets someone who missed the session quickly understand what happened while still capturing the tone and humor of the players."""
 
-reply_prompt = "You will now take feedback on your markdown summary and apply based on user's preference."
+critic_prompt = """You are a tabletop RPG session chronicler performing a **final consolidation pass**.
+
+You will receive several summaries of a tabletop RPG session. Each summary is contained between the
+<summary> and </summary> delimiters.
+
+These summaries represent **consecutive portions of the same session** and are provided in **chronological order** from earliest to latest.
+
+Your task is to **merge them into a single coherent summary of the entire session**.
+
+Guidelines:
+- Treat each <summary> block as a **continuation of the session timeline**.
+- Preserve the **chronological order of events** based on the order the summaries appear.
+- **Combine overlapping or repeated events** when they describe the same moment.
+- **Remove duplicated information** while keeping the most complete description.
+- Maintain the **tone of a narrated tale of the session**.
+- Do **not invent events** that are not present in the summaries.
+- Do **not include the text <summary>** in your response.
+
+Output Format:
+- Markdown bullet list with header organization
+- Each bullet represents a major moment, event, or interaction from the session
+- Quotes may be included inline using quotation marks
+
+Your goal is to produce a **clean, cohesive final summary** that reads as one continuous narrative of the session while preserving all important events, character moments, and story developments."""
+
+feedback_prompt = """You will receive feedback about a markdown summary of a tabletop RPG session.
+
+Your task is to **revise the existing summary according to the user's feedback** while preserving the original structure and information whenever possible.
+
+Guidelines:
+- Maintain the **markdown bullet list format with headers**.
+- Apply the user's requested changes such as edits, additions, removals, or stylistic adjustments.
+- Keep the **chronological order of events** unless the user specifically asks to change it.
+- Do **not invent new events** that were not already present in the summary unless the user explicitly asks for a creative addition.
+- Preserve the **tone of a narrated tale of the session** unless the user requests a different tone.
+- If feedback is ambiguous, make the **smallest reasonable change** that satisfies the request.
+
+Output the **updated full summary**, not just the changes."""
+
+[discord]
+# What the bot shows as its activity status. Valid options: "Playing", "Listening", "Watching", "Competing"
+# Change this to fit your group's vibe.
+activity_type = "Listening"
+# The text that appears after the activity type (e.g., "Listening to your D&D Campaign")
+activity_name = "your D&D Campaign"
 
 [limits]
 # The token limit before your bot disconnects to clear its buffer - change based on your model spec if you like
 token_limit = 30000
+
+# The percentage of the max token limit to reach before triggering a mid-session summary (0.0 to 1.0).
+# Lower this if your model hallucinates on long contexts, raise it if you have massive context windows.
+token_split_ratio = 0.75
+
+# The max character count for a single discord message chunk. Discord's absolute limit is 2000.
+# Lower this if you prefer shorter, more readable message blocks instead of walls of text.
+message_chunk_size = 1800
+
+# The amount of silence (in milliseconds) required to assume a user has stopped speaking.
+# Change to a higher value (e.g., 1000) if users take long pauses, or lower if they talk very fast.
+silence_duration = 500
 
 # The number of threads whisper.cpp is allowed to use, assuming you didn't compile to vulkan - only change if you know what you're doing
 whisper_threads = 4
 
 # The amount of time (in minutes) you want your summary bot to listen to feedback on discussions - change if 30 min is not enough
 feedback_time = 30
+
+# The parameters you want the model to run by - DO NOT CHANGE UNLESS YOU'RE FOLLOWING YOUR MODEL'S GUIDELINES
+temperature = 0.6
+
+top_k = 20
+
+top_p = 0.95
+
+# Whether you want your bot to think or not
+thinking = true
 
 [tokens]
 # This is where you discord token CAN be - I do NOT recommend it, but this makes things easier than creating a .env file

@@ -88,12 +88,7 @@ fn start_bot(app: AppHandle, state: State<'_, BotState>) -> Result<(), String> {
     let conf = read_conf()?;
 
     #[cfg(target_os = "windows")]
-    let bot_path = "ext-bin/note-ify-windows.exe";
-    #[cfg(not(target_os = "windows"))]
-    let bot_path = "ext-bin/note-ify-linux";
-
-    #[cfg(target_os = "windows")]
-    let whisper_path = "ext-bin/whisper-windows/whisper-server.exe";
+    let whisper_path = "../ext-bin/whisper-windows/whisper-server.exe";
 
     #[cfg(not(target_os = "windows"))]
     let whisper_path = conf.models.whisper_server_path.as_str();
@@ -136,7 +131,14 @@ fn start_bot(app: AppHandle, state: State<'_, BotState>) -> Result<(), String> {
         );
     }
 
-    let mut bot_child = match Command::new(bot_path)
+    #[cfg(target_os = "windows")]
+    let bot_cmd = "bun.exe";
+    #[cfg(not(target_os = "windows"))]
+    let bot_cmd = "bun";
+
+    let mut bot_child = match Command::new(bot_cmd)
+        .arg("run")
+        .arg("App.js")
         .current_dir("../")
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
@@ -150,7 +152,7 @@ fn start_bot(app: AppHandle, state: State<'_, BotState>) -> Result<(), String> {
             }
             *whisper_guard = None;
 
-            return Err(format!("Failed to spawn bot binary at `{bot_path}`: {e}"));
+            return Err(format!("Failed to spawn bot via `{bot_cmd}`: {e}"));
         }
     };
 
@@ -210,6 +212,18 @@ fn stop_bot(app: AppHandle, state: State<'_, BotState>) -> Result<(), String> {
     Ok(())
 }
 
+#[tauri::command]
+fn get_config() -> Result<String, String> {
+    let conf_path = "../conf/conf.toml";
+    fs::read_to_string(conf_path).map_err(|e| format!("Failed to read config: {e}"))
+}
+
+#[tauri::command]
+fn save_config(new_config: String) -> Result<(), String> {
+    let conf_path = "../conf/conf.toml";
+    fs::write(conf_path, new_config).map_err(|e| format!("Failed to write config: {e}"))
+}
+
 fn main() {
     tauri::Builder::default()
         .manage(BotState {
@@ -219,7 +233,9 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             start_bot,
             stop_bot,
-            bot_is_running
+            bot_is_running,
+            get_config,
+            save_config
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

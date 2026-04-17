@@ -129,6 +129,44 @@
                     </div>
 
                     <div class="panel config-section">
+                        <h2>Discord Settings</h2>
+
+                        <div class="field-grid">
+                            <div class="field-group">
+                                <label for="activityType">Activity Type</label>
+                                <select
+                                    id="activityType"
+                                    name="activity_type"
+                                    class="config-input"
+                                >
+                                    <option value="Listening">Listening</option>
+                                    <option value="Playing">Playing</option>
+                                    <option value="Watching">Watching</option>
+                                    <option value="Competing">Competing</option>
+                                </select>
+                                <p class="field-help">
+                                    The prefix for the bot's status.
+                                </p>
+                            </div>
+
+                            <div class="field-group">
+                                <label for="activityName">Activity Name</label>
+                                <input
+                                    id="activityName"
+                                    name="activity_name"
+                                    type="text"
+                                    class="config-input"
+                                    value="your D&D Campaign"
+                                    placeholder="your D&D Campaign"
+                                />
+                                <p class="field-help">
+                                    The custom text for the bot's status.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="panel config-section">
                         <h2>Limits</h2>
 
                         <div class="field-grid">
@@ -146,6 +184,56 @@
                                 <p class="field-help">
                                     Disconnect threshold used to clear the
                                     buffer.
+                                </p>
+                            </div>
+
+                            <div class="field-group">
+                                <label for="tokenSplitRatio">Token Split Ratio</label>
+                                <input
+                                    id="tokenSplitRatio"
+                                    name="token_split_ratio"
+                                    type="number"
+                                    class="config-input"
+                                    value="0.75"
+                                    min="0.1"
+                                    max="1.0"
+                                    step="0.05"
+                                />
+                                <p class="field-help">
+                                    Percentage of token limit to trigger a summary.
+                                </p>
+                            </div>
+
+                            <div class="field-group">
+                                <label for="messageChunkSize">Message Chunk Size</label>
+                                <input
+                                    id="messageChunkSize"
+                                    name="message_chunk_size"
+                                    type="number"
+                                    class="config-input"
+                                    value="1800"
+                                    min="100"
+                                    max="2000"
+                                    step="100"
+                                />
+                                <p class="field-help">
+                                    Max characters per Discord message chunk.
+                                </p>
+                            </div>
+
+                            <div class="field-group">
+                                <label for="silenceDuration">Silence Duration (ms)</label>
+                                <input
+                                    id="silenceDuration"
+                                    name="silence_duration"
+                                    type="number"
+                                    class="config-input"
+                                    value="500"
+                                    min="100"
+                                    step="100"
+                                />
+                                <p class="field-help">
+                                    Time a user must be quiet to end speech capture.
                                 </p>
                             </div>
 
