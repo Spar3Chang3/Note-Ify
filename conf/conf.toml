@@ -72,9 +72,28 @@ Guidelines:
 
 Output the **updated full summary**, not just the changes."""
 
+[discord]
+# What the bot shows as its activity status. Valid options: "Playing", "Listening", "Watching", "Competing"
+# Change this to fit your group's vibe.
+activity_type = "Listening"
+# The text that appears after the activity type (e.g., "Listening to your D&D Campaign")
+activity_name = "your D&D Campaign"
+
 [limits]
 # The token limit before your bot disconnects to clear its buffer - change based on your model spec if you like
 token_limit = 30000
+
+# The percentage of the max token limit to reach before triggering a mid-session summary (0.0 to 1.0).
+# Lower this if your model hallucinates on long contexts, raise it if you have massive context windows.
+token_split_ratio = 0.75
+
+# The max character count for a single discord message chunk. Discord's absolute limit is 2000.
+# Lower this if you prefer shorter, more readable message blocks instead of walls of text.
+message_chunk_size = 1800
+
+# The amount of silence (in milliseconds) required to assume a user has stopped speaking.
+# Change to a higher value (e.g., 1000) if users take long pauses, or lower if they talk very fast.
+silence_duration = 500
 
 # The number of threads whisper.cpp is allowed to use, assuming you didn't compile to vulkan - only change if you know what you're doing
 whisper_threads = 4

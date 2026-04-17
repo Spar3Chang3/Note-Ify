@@ -1,4 +1,4 @@
-import { Client, GatewayIntentBits } from "discord.js";
+import { Client, GatewayIntentBits, ActivityType } from "discord.js";
 import AppController from "@/lib/controller/AppController.js";
 import {
   DISCORD_TOKEN,
@@ -9,6 +9,8 @@ import {
   MAX_TOKEN_LIMIT,
   LOGIN_ASCII_ART,
   ERR_ASCII_ART,
+  ACTIVITY_TYPE,
+  ACTIVITY_NAME,
 } from "@/lib/static/Constants.js";
 
 const client = new Client({
@@ -30,6 +32,16 @@ client.on("messageCreate", async (message) => {
 client
   .login(process.env.DISCORD_TOKEN ?? DISCORD_TOKEN)
   .then(() => {
+    const typeMap = {
+      Playing: ActivityType.Playing,
+      Listening: ActivityType.Listening,
+      Watching: ActivityType.Watching,
+      Competing: ActivityType.Competing,
+    };
+    const mappedType = typeMap[ACTIVITY_TYPE] || ActivityType.Listening;
+    
+    client.user.setActivity(ACTIVITY_NAME, { type: mappedType });
+
     console.log(`${LOGIN_ASCII_ART}\nLogged in and awaiting vc to join`);
     printValues();
   })
