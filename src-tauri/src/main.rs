@@ -8,7 +8,7 @@ use std::{
 };
 
 use serde::Deserialize;
-use tauri::{AppHandle, Emitter, State};
+use tauri::{AppHandle, Emitter, Manager, State};
 
 struct BotState {
     bot_child: Mutex<Option<Child>>,
@@ -34,8 +34,14 @@ struct ModelsConf {
 
 #[tauri::command]
 fn bot_is_running(state: State<'_, BotState>) -> bool {
-    let guard = state.bot_child.lock().unwrap();
-    guard.is_some()
+    let mut guard = state.bot_child.lock().unwrap();
+    if let Some(child) = guard.as_mut() {
+        match child.try_wait() {
+            Ok(None) => return true,
+            _ => return false,
+        }
+    }
+    false
 }
 
 fn pipe_child_logs<R: std::io::Read + Send + 'static>(
@@ -172,6 +178,52 @@ fn start_bot(app: AppHandle, state: State<'_, BotState>) -> Result<(), String> {
         "bot-log",
         format!("[ui] bot process started (pid {bot_pid})"),
     );
+
+    let monitor_app = app.clone();
+    std::thread::spawn(move || {
+        loop {
+            std::thread::sleep(std::time::Duration::from_millis(500));
+            let state = monitor_app.state::<BotState>();
+
+            let mut bot_guard = state.bot_child.lock().unwrap();
+            let mut exited = false;
+
+            if let Some(child) = bot_guard.as_mut() {
+                match child.try_wait() {
+                    Ok(Some(status)) => {
+                        exited = true;
+                        let _ = monitor_app
+                            .emit("bot-log", format!("[system] bot process exited: {status}"));
+                    }
+                    Ok(None) => {} // Still running
+                    Err(e) => {
+                        exited = true;
+                        let _ = monitor_app
+                            .emit("bot-log", format!("[system] bot process wait error: {e}"));
+                    }
+                }
+            } else {
+                break;
+            }
+
+            if exited {
+                *bot_guard = None;
+
+                let mut whisper_guard = state.whisper_child.lock().unwrap();
+                if let Some(mut w_child) = whisper_guard.take() {
+                    let _ = w_child.kill();
+                    let _ = w_child.wait();
+                    let _ = monitor_app.emit(
+                        "bot-log",
+                        "[system] whisper process stopped due to bot exit",
+                    );
+                }
+
+                let _ = monitor_app.emit("bot-status", "stopped");
+                break;
+            }
+        }
+    });
 
     Ok(())
 }
